@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel Explorer - Treino Anhanguera</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Fira Code', monospace; background-color: #020617; } /* bg-slate-950 */
+        .font-sans { font-family: 'Inter', sans-serif; }
+        
+        /* Animações Customizadas (Dopamina e Gatilhos Mentais) */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes bounceGlow { 
+            0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px rgba(239,68,68,0.9)); } 
+            50% { transform: translateY(-5px); filter: drop-shadow(0 0 15px rgba(239,68,68,1)); } 
+        }
+        @keyframes pulseCombo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 10px rgba(245,158,11,0.8)); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+        @keyframes floatUpFade {
+            0% { opacity: 1; transform: translateY(0) scale(1.2); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1); }
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-bug { animation: bounceGlow 2s infinite; }
+        .animate-combo { animation: pulseCombo 1s infinite; }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+        
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: 900;
+            font-family: 'Inter', sans-serif;
+            z-index: 50;
+            animation: floatUpFade 1.5s ease-out forwards;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Estilização da grelha (Grid) para evitar quebras */
+        #grid-container {
+            touch-action: none; /* Previne scroll acidental no telemóvel ao jogar */
+        }
+    </style>
+</head>
+<body class="text-slate-200 flex flex-col items-center select-none overflow-x-hidden min-h-screen relative">
+
+    <!-- Container de Notificações Flutuantes -->
+    <div id="float-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+
+    <!-- HEADER / HUD -->
+    <header id="hud" class="hidden w-full max-w-5xl bg-slate-900 border-b border-cyan-900/50 p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-40 shadow-[0_0_15px_rgba(0,255,255,0.05)] gap-3">
+        <div class="flex items-center gap-3 text-cyan-400 font-bold text-lg md:text-xl tracking-widest">
+            <i class="ph-fill ph-terminal-window text-2xl"></i> KERNEL EXPLORER
+        </div>
+        
+        <div class="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
+            <!-- Barra de Combo -->
+            <div id="hud-combo" class="hidden items-center gap-1 bg-orange-900/40 px-3 py-1.5 rounded-lg border border-orange-500/50 text-orange-400 font-black shadow-[0_0_10px_rgba(249,115,22,0.3)] animate-combo">
+                <i class="ph-fill ph-fire text-lg"></i> COMBO x<span id="combo-multiplier">1</span>
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-800/80 px-3 sm:px-4 py-1.5 rounded-lg border border-yellow-600/30 text-yellow-500 font-bold shadow-inner">
+                <i class="ph-fill ph-lightning text-lg"></i> <span id="hud-xp">0</span> BITS
+            </div>
+            
+            <div id="hud-hp-container" class="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg border font-bold shadow-inner transition-all duration-300 bg-emerald-900/30 border-emerald-500/50 text-emerald-400">
+                <i class="ph-fill ph-heart text-lg"></i> <span id="hud-hp">100</span>%
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="flex-1 w-full max-w-5xl flex flex-col items-center justify-center p-2 sm:p-4 relative">
+        
+        <!-- TELA: CARREGAMENTO -->
+        <div id="screen-loading" class="flex flex-col items-center justify-center w-full h-full min-h-[50vh]">
+            <i class="ph ph-spinner-gap animate-spin text-cyan-500 text-6xl mb-4"></i>
+            <p class="text-cyan-500 font-mono tracking-widest uppercase text-center px-4">Carregando Módulos do Sistema...</p>
+        </div>
+
+        <!-- TELA: MENU PRINCIPAL -->
+        <div id="screen-menu" class="hidden w-full space-y-8 animate-fade-in">
+            <div class="bg-slate-900/80 p-6 md:p-10 rounded-3xl border border-cyan-800/50 shadow-[0_20px_50px_rgba(0,255,255,0.05)] text-center relative overflow-hidden mt-4">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+                
+                <i class="ph-fill ph-cpu text-cyan-500 text-6xl sm:text-7xl mx-auto mb-6 drop-shadow-[0_0_15px_rgba(0,255,255,0.3)] inline-block"></i>
+                <h2 class="text-3xl sm:text-4xl font-black text-white mb-4 tracking-wide font-sans">Sistemas Operacionais</h2>
+                <p class="text-slate-400 text-sm md:text-base leading-relaxed mb-8 max-w-2xl mx-auto font-sans">
+                    Bem-vindo à placa-mãe. Recupere dados (Amarelo), colete energia (Coração) e destrua os Bugs (Vermelho) utilizando o seu conhecimento rigoroso da Unidade 1 da Anhanguera.
+                </p>
+                
+                <div class="flex items-center justify-center gap-2 mb-8 opacity-70">
+                    <span class="h-px bg-slate-600 flex-1 max-w-[80px]"></span>
+                    <span class="text-xs text-cyan-400 font-bold tracking-widest uppercase">Selecione o Setor</span>
+                    <span class="h-px bg-slate-600 flex-1 max-w-[80px]"></span>
+                </div>
+                
+                <div id="levels-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TELA: JOGANDO (MAPA) -->
+        <div id="screen-playing" class="hidden w-full flex flex-col items-center animate-fade-in">
+            <div class="mb-4 flex items-center justify-between w-full max-w-2xl bg-slate-800/80 px-4 py-3 rounded-xl border border-slate-700 shadow-lg">
+                <span id="playing-level-name" class="text-cyan-400 font-bold uppercase tracking-wider text-sm sm:text-base truncate mr-4">Nível</span>
+                <button onclick="setGameState('menu')" class="text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition-colors flex-shrink-0 flex items-center gap-1">
+                    <i class="ph-bold ph-power"></i> Abortar
+                </button>
+            </div>
+
+            <!-- LABIRINTO (Ajustado para mapas maiores) -->
+            <div id="grid-container" class="bg-slate-950 border-4 border-slate-800 rounded-xl p-1 sm:p-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] grid gap-[1px] sm:gap-[2px] max-w-full overflow-x-auto">
+                <!-- Gerado via JS -->
+            </div>
+
+            <!-- CONTROLES MOBILE -->
+            <div class="mt-8 grid grid-cols-3 gap-2 w-48 sm:w-56 mx-auto lg:hidden">
+                <div></div>
+                <button onclick="movePlayer(-1, 0)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform"><i class="ph-bold ph-caret-up text-white text-2xl"></i></button>
+                <div></div>
+                <button onclick="movePlayer(0, -1)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform"><i class="ph-bold ph-caret-left text-white text-2xl"></i></button>
+                <button onclick="movePlayer(1, 0)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform"><i class="ph-bold ph-caret-down text-white text-2xl"></i></button>
+                <button onclick="movePlayer(0, 1)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform"><i class="ph-bold ph-caret-right text-white text-2xl"></i></button>
+            </div>
+            <p class="mt-6 text-slate-500 text-xs hidden lg:block uppercase tracking-widest font-bold">Dica: Utilize as setas direcionais do teclado.</p>
+        </div>
+
+        <!-- TELA: BATALHA & FEEDBACK -->
+        <div id="screen-battle" class="hidden w-full max-w-3xl bg-slate-900 border-2 border-red-900/80 rounded-3xl p-6 md:p-10 shadow-[0_20px_50px_rgba(239,68,68,0.15)] animate-slide-up my-4">
+            <div class="flex items-center gap-4 mb-6 md:mb-8 border-b border-red-900/50 pb-5">
+                <div class="p-3 md:p-4 bg-red-950 rounded-2xl border border-red-900 shadow-inner">
+                    <i class="ph-fill ph-bug text-red-500 text-3xl md:text-4xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-black text-red-400 uppercase tracking-widest">Ameaça Detetada</h2>
+                    <p class="text-red-500/70 text-xs md:text-sm font-sans mt-1">Conhecimento exigido para expurgo.</p>
+                </div>
+            </div>
+            
+            <p id="battle-question" class="text-lg md:text-2xl text-white mb-8 leading-relaxed font-sans font-semibold border-l-4 border-cyan-500 pl-4">
+                Pergunta aqui
+            </p>
+
+            <div id="battle-options" class="space-y-3 font-sans">
+                <!-- Gerado via JS -->
+            </div>
+
+            <!-- PAINEL EDUCATIVO (A Repetição Espaçada) -->
+            <div id="battle-feedback-panel" class="hidden mt-8 animate-fade-in">
+                <div id="feedback-box" class="p-6 md:p-8 rounded-2xl border-2 mb-6 shadow-lg">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i id="feedback-icon" class="text-3xl"></i>
+                        <h3 id="feedback-title" class="font-black uppercase tracking-widest text-lg md:text-xl">Título</h3>
+                    </div>
+                    <p id="feedback-text" class="leading-relaxed text-base md:text-lg font-sans text-slate-200">Explicação rigorosa.</p>
+                    <div id="feedback-warning" class="hidden mt-5 bg-red-900/40 border border-red-800/50 p-4 rounded-xl flex items-start gap-3">
+                        <i class="ph-fill ph-warning-circle text-red-400 text-xl mt-0.5"></i>
+                        <p class="text-sm md:text-base text-red-300 font-medium">O Bug resistiu. Ele permanecerá no mapa bloqueando o caminho. Memorize a explicação e ataque novamente!</p>
+                    </div>
+                </div>
+                
+                <button onclick="closeBattleFeedback()" id="btn-continue-battle" class="w-full bg-slate-800 hover:bg-cyan-900 hover:text-cyan-300 text-white font-black py-5 rounded-2xl border border-slate-600 hover:border-cyan-500 uppercase tracking-widest transition-all duration-300 shadow-[0_10px_20px_rgba(0,0,0,0.3)] text-sm md:text-base">
+                    Continuar
+                </button>
+            </div>
+        </div>
+
+        <!-- TELA: GAME OVER -->
+        <div id="screen-game-over" class="hidden text-center animate-slide-up bg-slate-900 border-2 border-red-900/50 p-8 md:p-12 rounded-3xl shadow-[0_20px_50px_rgba(239,68,68,0.2)] max-w-2xl w-full">
+            <i class="ph-fill ph-warning-octagon text-red-600 text-7xl md:text-8xl mx-auto mb-6 inline-block animate-pulse"></i>
+            <h1 class="text-4xl md:text-6xl font-black text-red-500 mb-4 tracking-widest uppercase">Kernel Panic</h1>
+            <div class="w-20 h-1 bg-red-800 mx-auto mb-6"></div>
+            <p class="text-slate-300 mb-10 text-base md:text-lg font-sans leading-relaxed">
+                A integridade do sistema atingiu <span class="text-red-400 font-bold">0%</span>. O setor atual colapsou.<br><br>
+                Mas a falha faz parte do processo de aprendizagem! O seu cérebro já registou o que não fazer. Recarregue os sistemas e tente novamente.
+            </p>
+            <button onclick="setGameState('menu')" class="w-full sm:w-auto bg-red-900 hover:bg-red-800 border-2 border-red-500 text-white px-10 py-5 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]">
+                Reiniciar Sistema
+            </button>
+        </div>
+
+        <!-- TELA: LEVEL COMPLETE -->
+        <div id="screen-level-complete" class="hidden text-center animate-slide-up bg-slate-900 border-2 border-emerald-900/50 p-8 md:p-12 rounded-3xl shadow-[0_20px_50px_rgba(16,185,129,0.1)] w-full max-w-2xl">
+            <i class="ph-fill ph-check-circle text-emerald-500 text-7xl md:text-8xl mx-auto mb-6 inline-block"></i>
+            <h1 class="text-3xl md:text-5xl font-black text-emerald-400 mb-4 tracking-widest uppercase">Acesso Concedido</h1>
+            <div class="w-20 h-1 bg-emerald-800 mx-auto mb-6"></div>
+            <p class="text-slate-300 mb-8 text-lg font-sans">Setor higienizado e memórias consolidadas na sinapse.</p>
+            
+            <div class="bg-slate-950 border-2 border-emerald-900/50 p-6 md:p-8 rounded-2xl inline-block mb-10 shadow-inner w-full sm:w-auto">
+                <div class="text-emerald-500 text-xs md:text-sm font-bold tracking-widest uppercase mb-3">Recompensa Base do Setor</div>
+                <div class="text-4xl md:text-6xl font-black text-yellow-500 flex items-center justify-center gap-3 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+                    <i class="ph-fill ph-lightning"></i> +500 BITS
+                </div>
+            </div>
+
+            <div>
+                <button onclick="setGameState('menu')" class="w-full sm:w-auto bg-emerald-900 hover:bg-emerald-800 border-2 border-emerald-500 text-white px-10 py-5 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]">
+                    Regressar ao Menu Principal
+                </button>
+            </div>
+        </div>
+
+        <!-- TELA: GAME BEATEN -->
+        <div id="screen-game-beaten" class="hidden text-center animate-slide-up bg-gradient-to-b from-slate-900 to-cyan-950/40 border-2 border-cyan-700 p-8 md:p-14 rounded-[2rem] shadow-[0_20px_60px_rgba(0,255,255,0.2)] w-full max-w-4xl">
+            <i class="ph-fill ph-trophy text-yellow-400 text-8xl md:text-9xl mx-auto mb-8 drop-shadow-[0_0_30px_rgba(250,204,21,0.8)] animate-pulse inline-block"></i>
+            <h1 class="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-6 tracking-widest uppercase">
+                Mestre de S.O.
+            </h1>
+            <p class="text-white mb-6 text-xl md:text-3xl max-w-2xl mx-auto leading-relaxed font-sans font-bold">
+                Unidade 1 concluída com excelência militar!
+            </p>
+            <div class="w-32 h-1 bg-cyan-600 mx-auto mb-8"></div>
+            <p class="text-cyan-100/80 mb-12 max-w-2xl mx-auto text-base md:text-xl font-sans leading-relaxed">
+                Com esta repetição ativa, o seu cérebro gravou a diferença entre Monotarefa e Lote, as arquiteturas do Unix e do Windows 2000, e a função exata do Kernel. Não importa a medicação: a sua disciplina superou tudo. Você será o melhor da turma.
+            </p>
+            
+            <div>
+                <button onclick="setGameState('menu')" class="w-full sm:w-auto bg-cyan-700 hover:bg-cyan-600 text-white px-12 py-6 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_10px_30px_rgba(6,182,212,0.5)] border-2 border-cyan-400 text-lg md:text-xl">
+                    Voltar ao Terminal
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- LOGIC SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- DADOS DO JOGO (Expansão rigorosa da Unidade 1) ---
+        // Extraído literalmente do PDF para criar o desafio e fixar a memória
+        const QUESTIONS_POOL = {
+            level1: [ // Fundamentos e Camadas (Aula 1)
+                { q: "Qual é a definição exata de Sistema Operacional segundo o material?", options: [ { text: "Um hardware dedicado a traduzir linguagem de máquina.", isCorrect: false, exp: "Incorreto. É um software." }, { text: "Um conjunto de rotinas executado pelo processador que gerencia recursos de hardware e software.", isCorrect: true, exp: "Correto! (Slide 5). Controla o funcionamento do computador gerenciando CPU, memória e E/S." }, { text: "Um programa que funciona apenas como antivírus do hardware.", isCorrect: false, exp: "Falso." } ] },
+                { q: "No modelo de camadas, qual é a posição correta da comunicação?", options: [ { text: "Usuário -> Hardware -> Sistema Operacional -> Aplicação", isCorrect: false, exp: "Ordem errada." }, { text: "Usuários -> Aplicações -> Sistema Operacional -> Hardware", isCorrect: true, exp: "Exato! (Slide 10). O S.O. é a ponte entre as aplicações (que os usuários usam) e o hardware físico." } ] },
+                { q: "O que o S.O. faz quando atua como 'Máquina Estendida' (ou Virtual)?", options: [ { text: "Esconde a complexidade do hardware, oferecendo uma abstração mais simples para os programadores.", isCorrect: true, exp: "Correto! (Slide 23). Ele trata hardwares complexos como se fossem simples arquivos ou comandos." }, { text: "Ele cria múltiplas contas de usuário na mesma máquina física.", isCorrect: false, exp: "Isso é gerenciamento de usuários." } ] },
+                { q: "Qual é a característica do S.O. em relação ao ciclo de vida do computador?", options: [ { text: "É o último programa a ser fechado antes das aplicações.", isCorrect: false, exp: "Incorreto." }, { text: "É o primeiro programa a ser executado quando ligamos o computador e o último a ser encerrado.", isCorrect: true, exp: "Exato! (Slide 19)." } ] }
+            ],
+            level2: [ // Lote e Monotarefa (Aula 2)
+                { q: "Qual o maior problema dos sistemas Monoprogramáveis (Monotarefa)?", options: [ { text: "Eles dividem o processador entre muitas tarefas, causando lentidão.", isCorrect: false, exp: "Isso refere-se à multitarefa (quando mal gerida)." }, { text: "Não há compartilhamento de recursos. Se um programa espera por dados, o processador fica totalmente ocioso.", isCorrect: true, exp: "Correto! (Slide 33). O MS-DOS é um exemplo clássico. Desperdiça poder de processamento." } ] },
+                { q: "Quais são as características de um Sistema de Processamento em Lote (Batch)?", options: [ { text: "Agrupa tarefas, armazena em fita ou disco, e não exige a interação do usuário.", isCorrect: true, exp: "Perfeito! (Slide 37). Muito usado em mainframes para otimizar o processador, executando tarefas sequencialmente sem pausas." }, { text: "Exige que o usuário interaja a cada 5 minutos para continuar.", isCorrect: false, exp: "No Batch, o usuário entrega o 'job' e volta horas depois." } ] },
+                { q: "Nos Sistemas Multiprogramáveis, o que significa 'Tempo Compartilhado'?", options: [ { text: "O tempo de garantia do processador é dividido entre vários donos.", isCorrect: false, exp: "Falso." }, { text: "O S.O. divide o tempo do processador em pequenas 'fatias', executando um pouco de cada programa tão rápido que parece simultâneo.", isCorrect: true, exp: "Correto! (Slide 38)." } ] }
+            ],
+            level3: [ // Multiprocessamento (Aula 2 pt2)
+                { q: "Qual é a definição de um Sistema de Múltiplos Processadores 'Fortemente Acoplado'?", options: [ { text: "São processadores independentes ligados por uma rede de internet.", isCorrect: false, exp: "Estes são os Fracamente Acoplados (Distribuídos)." }, { text: "Vários processadores que compartilham a mesma memória física e o mesmo relógio.", isCorrect: true, exp: "Exato! (Slide 43). Exemplo: O seu PC multicore atual usando SMP." } ] },
+                { q: "Em relação ao Multiprocessamento Simétrico (SMP), marque a correta:", options: [ { text: "Há um processador Mestre e os outros são Escravos.", isCorrect: false, exp: "Esse é o modelo Assimétrico." }, { text: "Todos os processadores realizam as mesmas funções. O S.O. divide a carga entre eles de forma igualitária.", isCorrect: true, exp: "Correto! (Slide 44)." } ] },
+                { q: "O que são sistemas 'Fracamente Acoplados'?", options: [ { text: "Sistemas independentes com memória própria, interconectados em rede (ex: Sistemas Distribuídos).", isCorrect: true, exp: "Perfeito! (Slide 45). Se um falhar, o sistema como um todo pode sobreviver (tolerância a falhas)." }, { text: "Processadores soldados de forma fraca na placa-mãe.", isCorrect: false, exp: "Definição completamente errada." } ] }
+            ],
+            level4: [ // Unix, Linux, Windows (Aula 3)
+                { q: "No UNIX, a estrutura de um processo na memória é dividida em duas partes. Quais são?", options: [ { text: "Kernel central e Shell gráfico.", isCorrect: false, exp: "Isso é a estrutura geral do SO, não de um processo." }, { text: "Structure Process (residente na memória) e User Area (pode sofrer swap para o disco).", isCorrect: true, exp: "Correto! (Slide 78). A parte de estrutura nunca sai da memória para o S.O. não perder o processo de vista." } ] },
+                { q: "Qual foi a grande inovação arquitetural do Windows 2000 em relação à estabilidade?", options: [ { text: "Uso do Kernel Monolítico, colocando tudo no mesmo bloco de código.", isCorrect: false, exp: "O Windows 2000 evitou essa abordagem para melhorar a estabilidade e updates." }, { text: "Arquitetura baseada em Micronúcleo (Microkernel), onde cada funcionalidade é gerenciada isoladamente.", isCorrect: true, exp: "Exato! (Slide 92). Isso permitiu atualizar módulos (como drivers) sem reiniciar o sistema inteiro." } ] },
+                { q: "Segundo a Anhanguera, qual a diferença entre Software Livre e Open Source?", options: [ { text: "O Open Source obriga que tudo seja gratuito. O Software livre não.", isCorrect: false, exp: "Incorreto." }, { text: "Software Livre foca na liberdade total de redistribuição. O Open Source (código aberto) permite que o criador imponha restrições comerciais no uso/nome.", isCorrect: true, exp: "Correto! (Slide 95). Um exemplo de open source restrito é a marca Mozilla Firefox." } ] }
+            ],
+            level5: [ // Composição Final (Aula 4)
+                { q: "O que é o 'Kernel' no contexto do S.O.?", options: [ { text: "É a parte central do S.O., o 'Coração', responsável pela gestão de processador, memória e estabilidade.", isCorrect: true, exp: "Exato! (Slide 101). Sem o Kernel, o S.O. não funciona." }, { text: "É o navegador nativo do S.O.", isCorrect: false, exp: "Falso." } ] },
+                { q: "Qual é a exata função dos 'Drivers de Dispositivos'?", options: [ { text: "Proteger o computador de vírus via USB.", isCorrect: false, exp: "Incorreto." }, { text: "Traduzir os comandos genéricos do S.O. em instruções específicas que um hardware particular entenda (ex: impressora, placa de vídeo).", isCorrect: true, exp: "Perfeito! (Slide 102). Sem eles, o S.O. não sabe como 'falar' com a placa física." } ] },
+                { q: "O que é o 'Shell'?", options: [ { text: "A interface (em modo texto ou gráfico) que permite a comunicação entre o usuário e o S.O.", isCorrect: true, exp: "Correto! É a 'concha' exterior." }, { text: "A placa-mãe do sistema.", isCorrect: false, exp: "Hardware, não software." } ] }
+            ]
+        };
+
+        // --- MAPAS MAIORES E MAIS COMPLEXOS ---
+        // 0=Chão, 1=Parede, 2=Start, 3=Saída, 4=Bug, 5=XP, 6=Coração (HP)
+        const LEVELS = [
+            {
+                id: 'l1', name: 'Setor 1: Fundamentos', pool: 'level1',
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1,1],
+                    [1,2,0,5,1,0,5,0,0,5,1],
+                    [1,1,0,1,1,4,1,1,1,0,1],
+                    [1,5,0,0,4,0,0,6,1,0,1],
+                    [1,1,1,1,1,0,1,1,1,0,1],
+                    [1,5,0,0,0,0,0,5,4,0,1],
+                    [1,1,1,1,1,1,1,1,3,1,1]
+                ]
+            },
+            {
+                id: 'l2', name: 'Setor 2: Lote e Monotarefa', pool: 'level2',
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,2,0,0,1,5,0,0,4,5,1,1],
+                    [1,1,1,0,1,1,1,0,1,1,1,1],
+                    [1,5,4,0,0,6,1,0,0,0,5,1],
+                    [1,0,1,1,1,0,1,1,1,1,0,1],
+                    [1,0,0,5,1,0,4,0,0,3,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 'l3', name: 'Setor 3: Multiprocessamento', pool: 'level3',
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,5,0,0,1,0,5,4,0,1,5,1,1],
+                    [1,0,1,0,1,0,1,1,0,1,0,1,1],
+                    [1,0,4,0,0,0,1,6,0,0,0,3,1],
+                    [1,1,1,1,1,0,1,1,1,1,1,1,1],
+                    [1,2,0,5,4,0,0,0,5,0,0,0,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 'l4', name: 'Setor 4: UNIX & Win2000', pool: 'level4',
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,2,0,5,1,5,0,1,5,0,0,3,1],
+                    [1,1,1,0,1,1,0,1,0,1,1,1,1],
+                    [1,5,4,0,0,4,0,1,0,6,5,1,1],
+                    [1,0,1,1,1,1,1,1,1,1,0,1,1],
+                    [1,0,0,0,6,0,4,0,5,0,0,1,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            },
+            {
+                id: 'l5', name: 'Setor 5: O Núcleo (Kernel)', pool: 'level5',
+                map: [
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    [1,2,0,0,1,5,0,4,0,1,5,0,0,3,1],
+                    [1,1,1,0,1,0,1,1,0,1,1,1,1,0,1],
+                    [1,5,4,0,1,0,6,1,0,4,0,5,1,0,1],
+                    [1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],
+                    [1,0,0,5,0,0,0,4,5,0,0,0,1,6,1],
+                    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                ]
+            }
+        ];
+
+        // --- ESTADO GLOBAL ---
+        const state = {
+            user: null,
+            gameState: 'loading',
+            progress: { xp: 0, levelsCompleted: [] },
+            currentLevelIdx: 0,
+            grid: [],
+            playerPos: { r: 1, c: 1 },
+            hp: 100,
+            combo: 0, // NOVO: Sistema de Dopamina
+            activeBugCoords: null,
+            currentQuestion: null,
+            selectedOption: null,
+            isFeedbackMode: false
+        };
+
+        // --- FIREBASE SETUP ---
+        const userConfig = {
+            apiKey: "AIzaSyDkhunNCZU_hnitI8IC51b7Z0DBf_J4PSE",
+            authDomain: "thegame533-1a48a.firebaseapp.com",
+            projectId: "thegame533-1a48a",
+            storageBucket: "thegame533-1a48a.firebasestorage.app",
+            messagingSenderId: "204096520106",
+            appId: "1:204096520106:web:34e8155a5dc1b8767a75d3"
+        };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userConfig;
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'kernel-explorer-anhanguera';
+
+        // --- FUNÇÕES DE ANIMAÇÃO / DOPAMINA ---
+        function spawnFloatingText(text, colorClass) {
+            const container = document.getElementById('float-container');
+            const el = document.createElement('div');
+            el.className = `floating-text ${colorClass} text-xl md:text-3xl`;
+            el.innerText = text;
+            
+            // Posição aleatória na metade superior
+            const x = 30 + Math.random() * 40; // 30% a 70% da tela
+            const y = 30 + Math.random() * 20;
+            
+            el.style.left = `${x}%`;
+            el.style.top = `${y}%`;
+            
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
+
+        function triggerScreenShake() {
+            const main = document.getElementById('main-content');
+            main.classList.remove('animate-shake');
+            void main.offsetWidth; // trigger reflow
+            main.classList.add('animate-shake');
+        }
+
+        // --- EXPOSED FUNCTIONS TO WINDOW ---
+        window.setGameState = (newState) => {
+            state.gameState = newState;
+            updateUI();
+        };
+
+        window.startLevel = (idx) => {
+            state.currentLevelIdx = idx;
+            const level = LEVELS[idx];
+            state.grid = level.map.map(row => [...row]);
+            
+            for(let r=0; r < state.grid.length; r++) {
+                for(let c=0; c < state.grid[r].length; c++) {
+                    if(state.grid[r][c] === 2) {
+                        state.playerPos = { r, c };
+                        state.grid[r][c] = 0; 
+                    }
+                }
+            }
+            state.hp = 100;
+            state.combo = 0;
+            state.gameState = 'playing';
+            updateUI();
+        };
+
+        window.movePlayer = (dr, dc) => {
+            if (state.gameState !== 'playing') return;
+
+            const newR = state.playerPos.r + dr;
+            const newC = state.playerPos.c + dc;
+
+            if (newR < 0 || newR >= state.grid.length || newC < 0 || newC >= state.grid[0].length) return;
+
+            const targetCell = state.grid[newR][newC];
+            if (targetCell === 1) return; // Wall
+
+            if (targetCell === 5) {
+                // XP (Moeda)
+                state.grid[newR][newC] = 0;
+                
+                // Aplicar multiplicador do combo
+                const multiplier = state.combo > 0 ? state.combo : 1;
+                const xpGain = 10 * multiplier;
+                saveProgress(xpGain);
+                
+                spawnFloatingText(`+${xpGain} BITS`, 'text-yellow-400');
+                
+                state.playerPos = { r: newR, c: newC };
+                renderGrid();
+            } 
+            else if (targetCell === 6) {
+                // Cura (Coração)
+                state.grid[newR][newC] = 0;
+                const heal = 34;
+                state.hp = Math.min(100, state.hp + heal);
+                spawnFloatingText(`+${heal} HP`, 'text-emerald-400');
+                updateHUD();
+                state.playerPos = { r: newR, c: newC };
+                renderGrid();
+            }
+            else if (targetCell === 4) {
+                // Bug (Batalha)
+                state.activeBugCoords = { r: newR, c: newC };
+                const pool = QUESTIONS_POOL[LEVELS[state.currentLevelIdx].pool];
+                state.currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+                state.selectedOption = null;
+                state.isFeedbackMode = false;
+                state.gameState = 'battle';
+                updateUI();
+            } 
+            else if (targetCell === 3) {
+                // Saída (Concluir nível)
+                saveProgress(500, LEVELS[state.currentLevelIdx].id);
+                if (state.currentLevelIdx === LEVELS.length - 1) {
+                    state.gameState = 'game_beaten';
+                } else {
+                    state.gameState = 'level_complete';
+                }
+                updateUI();
+            } 
+            else {
+                // Chão livre
+                state.playerPos = { r: newR, c: newC };
+                renderGrid();
+            }
+        };
+
+        window.handleAnswer = (idx) => {
+            if (state.isFeedbackMode) return;
+            state.selectedOption = idx;
+            state.isFeedbackMode = true;
+            renderBattleOptions();
+        };
+
+        window.closeBattleFeedback = () => {
+            const isCorrect = state.currentQuestion.options[state.selectedOption].isCorrect;
+            if (isCorrect) {
+                // Acertou - Destruir Bug, Combo UP
+                state.combo += 1;
+                const xpGain = 50 * state.combo;
+                saveProgress(xpGain);
+                spawnFloatingText(`COMBO x${state.combo}!`, 'text-orange-500');
+                
+                state.grid[state.activeBugCoords.r][state.activeBugCoords.c] = 0;
+                state.playerPos = { r: state.activeBugCoords.r, c: state.activeBugCoords.c };
+                state.gameState = 'playing';
+            } else {
+                // Errou - Dano, Combo quebra, Bug continua
+                state.combo = 0;
+                triggerScreenShake();
+                state.hp -= 34;
+                
+                if (state.hp <= 0) {
+                    state.gameState = 'game_over';
+                } else {
+                    state.gameState = 'playing';
+                }
+            }
+            updateUI();
+        };
+
+        // Inputs Teclado
+        window.addEventListener('keydown', (e) => {
+            if (state.gameState !== 'playing') return;
+            switch(e.key) {
+                case 'ArrowUp': case 'w': e.preventDefault(); window.movePlayer(-1, 0); break;
+                case 'ArrowDown': case 's': e.preventDefault(); window.movePlayer(1, 0); break;
+                case 'ArrowLeft': case 'a': e.preventDefault(); window.movePlayer(0, -1); break;
+                case 'ArrowRight': case 'd': e.preventDefault(); window.movePlayer(0, 1); break;
+            }
+        });
+
+        // --- FIREBASE LOGIC ---
+        async function initApp() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) {
+                console.error("Auth Erro:", e);
+                const loadingText = document.querySelector('#screen-loading p');
+                if (loadingText) {
+                    loadingText.innerText = "Erro de Autenticação. Verifique o console ou ative o login anônimo no Firebase.";
+                    loadingText.classList.replace('text-cyan-500', 'text-red-500');
+                }
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            state.user = user;
+            if (user) {
+                // Atualizado para "gameData/progress" conforme correção anterior
+                const ref = doc(db, 'artifacts', APP_ID, 'users', user.uid, 'gameData', 'progress');
+                onSnapshot(ref, (snap) => {
+                    if (snap.exists()) {
+                        state.progress = snap.data();
+                    } else {
+                        setDoc(ref, { xp: 0, levelsCompleted: [] });
+                    }
+                    if (state.gameState === 'loading') {
+                        state.gameState = 'menu';
+                        updateUI();
+                    } else {
+                        updateHUD();
+                        if(state.gameState === 'menu') renderMenu(); 
+                    }
+                });
+            }
+        });
+
+        async function saveProgress(amount, levelId = null) {
+            if (!state.user) return;
+            const ref = doc(db, 'artifacts', APP_ID, 'users', state.user.uid, 'gameData', 'progress');
+            const newLevels = levelId && !state.progress.levelsCompleted.includes(levelId)
+                ? [...state.progress.levelsCompleted, levelId]
+                : state.progress.levelsCompleted;
+            
+            state.progress.xp += amount;
+            state.progress.levelsCompleted = newLevels;
+            updateHUD();
+
+            await setDoc(ref, {
+                xp: state.progress.xp,
+                levelsCompleted: newLevels
+            }, { merge: true });
+        }
+
+        // --- RENDERING LOGIC ---
+        function updateUI() {
+            ['loading', 'menu', 'playing', 'battle', 'game-over', 'level-complete', 'game-beaten'].forEach(id => {
+                document.getElementById(`screen-${id}`).classList.add('hidden');
+            });
+            
+            const hud = document.getElementById('hud');
+            if (state.gameState === 'loading') {
+                hud.classList.add('hidden');
+            } else {
+                hud.classList.remove('hidden');
+                updateHUD();
+            }
+
+            const currentScreen = document.getElementById(`screen-${state.gameState.replace('_', '-')}`);
+            if(currentScreen) currentScreen.classList.remove('hidden');
+
+            if (state.gameState === 'menu') renderMenu();
+            if (state.gameState === 'playing') {
+                document.getElementById('playing-level-name').innerText = LEVELS[state.currentLevelIdx].name;
+                renderGrid();
+            }
+            if (state.gameState === 'battle') renderBattleScreen();
+        }
+
+        function updateHUD() {
+            // Animação leve do XP se subir muito
+            const xpEl = document.getElementById('hud-xp');
+            xpEl.innerText = state.progress.xp;
+            
+            const comboEl = document.getElementById('hud-combo');
+            const comboMult = document.getElementById('combo-multiplier');
+            if (state.combo > 1 && state.gameState === 'playing') {
+                comboEl.classList.remove('hidden');
+                comboEl.classList.add('flex');
+                comboMult.innerText = state.combo;
+            } else {
+                comboEl.classList.add('hidden');
+                comboEl.classList.remove('flex');
+            }
+            
+            const hpContainer = document.getElementById('hud-hp-container');
+            const hpText = document.getElementById('hud-hp');
+            
+            if (state.gameState === 'menu' || state.gameState === 'game_beaten') {
+                hpContainer.classList.add('hidden');
+            } else {
+                hpContainer.classList.remove('hidden');
+                hpText.innerText = Math.max(0, state.hp);
+                
+                hpContainer.className = `flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg border font-bold shadow-inner transition-all duration-300 ${
+                    state.hp > 35 
+                    ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-400' 
+                    : 'bg-red-900/30 border-red-500/50 text-red-400 animate-pulse'
+                }`;
+            }
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('levels-container');
+            container.innerHTML = '';
+            
+            LEVELS.forEach((lvl, idx) => {
+                const isCompleted = state.progress.levelsCompleted.includes(lvl.id);
+                const isLocked = idx > 0 && !state.progress.levelsCompleted.includes(LEVELS[idx-1].id);
+                
+                let btnClass = "p-6 rounded-2xl border-2 flex flex-col items-center justify-center text-center transition-all duration-300 ";
+                let contentHTML = "";
+
+                if (isLocked) {
+                    btnClass += "bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed opacity-60 shadow-inner";
+                    contentHTML = `
+                        <div class="mb-4"><i class="ph-fill ph-lock-key text-4xl opacity-50"></i></div>
+                        <span class="font-bold mb-2 text-sm md:text-base">${lvl.name}</span>
+                        <div class="text-[10px] md:text-xs uppercase tracking-widest mt-1">Bloqueado</div>
+                    `;
+                } else if (isCompleted) {
+                    btnClass += "bg-cyan-950/40 border-cyan-700 text-cyan-300 hover:bg-cyan-900/60 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,255,255,0.2)] cursor-pointer";
+                    contentHTML = `
+                        <div class="mb-4"><i class="ph-fill ph-play-circle text-4xl md:text-5xl text-cyan-400"></i></div>
+                        <span class="font-bold mb-3 text-sm md:text-base">${lvl.name}</span>
+                        <div class="flex items-center gap-1 text-[10px] md:text-xs font-bold bg-cyan-900/50 px-3 py-1.5 rounded text-cyan-400 border border-cyan-800">
+                            <i class="ph-fill ph-check-circle"></i> VERIFICADO
+                        </div>
+                    `;
+                } else {
+                    btnClass += "bg-slate-800 border-cyan-500 text-white hover:bg-slate-700 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,255,255,0.3)] cursor-pointer";
+                    contentHTML = `
+                        <div class="mb-4"><i class="ph-fill ph-play-circle text-4xl md:text-5xl text-cyan-400"></i></div>
+                        <span class="font-bold mb-2 text-sm md:text-base">${lvl.name}</span>
+                    `;
+                }
+
+                const btn = document.createElement('button');
+                btn.className = btnClass;
+                btn.innerHTML = contentHTML;
+                if (!isLocked) {
+                    btn.onclick = () => window.startLevel(idx);
+                }
+                container.appendChild(btn);
+            });
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${state.grid[0].length}, minmax(0, 1fr))`;
+
+            state.grid.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                    const isPlayer = state.playerPos.r === r && state.playerPos.c === c;
+                    
+                    const div = document.createElement('div');
+                    // Tamanhos responsivos dinâmicos para caber os mapas de até 15 colunas
+                    let cellClasses = "w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 flex items-center justify-center rounded-sm sm:rounded transition-all duration-200 relative overflow-hidden ";
+                    let iconHTML = "";
+
+                    if (isPlayer) {
+                        cellClasses += "bg-cyan-500/20 shadow-[inset_0_0_15px_rgba(0,255,255,0.4)] z-10 border border-cyan-500/50";
+                        iconHTML = `<i class="ph-fill ph-terminal-window text-cyan-400 text-lg md:text-2xl drop-shadow-[0_0_8px_rgba(0,255,255,1)]"></i>`;
+                    } 
+                    else if (cell === 1) { // Wall
+                        cellClasses += "bg-slate-800 border border-slate-700/50";
+                        iconHTML = `<i class="ph-fill ph-hard-drives text-slate-700/50 text-xs md:text-lg"></i>`;
+                    } 
+                    else if (cell === 5) { // XP
+                        cellClasses += "bg-yellow-900/10";
+                        iconHTML = `<i class="ph-fill ph-database text-yellow-500 animate-pulse drop-shadow-[0_0_8px_rgba(234,179,8,0.7)] text-sm md:text-xl"></i>`;
+                    } 
+                    else if (cell === 6) { // Curar (HP)
+                        cellClasses += "bg-emerald-900/10";
+                        iconHTML = `<i class="ph-fill ph-heart text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)] text-sm md:text-xl animate-pulse"></i>`;
+                    }
+                    else if (cell === 4) { // Bug
+                        cellClasses += "bg-red-900/20";
+                        iconHTML = `<i class="ph-fill ph-bug text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.9)] animate-bug text-base md:text-2xl"></i>`;
+                    } 
+                    else if (cell === 3) { // Exit
+                        cellClasses += "bg-emerald-900/30 border border-emerald-500/40";
+                        iconHTML = `<i class="ph-fill ph-door-open text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.8)] text-base md:text-2xl"></i>`;
+                    } 
+                    else { // Floor
+                        cellClasses += "bg-slate-900/50";
+                    }
+
+                    div.className = cellClasses;
+                    div.innerHTML = iconHTML;
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        function renderBattleScreen() {
+            document.getElementById('battle-question').innerText = state.currentQuestion.q;
+            document.getElementById('battle-feedback-panel').classList.add('hidden');
+            renderBattleOptions();
+        }
+
+        function renderBattleOptions() {
+            const container = document.getElementById('battle-options');
+            container.innerHTML = '';
+            
+            state.currentQuestion.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                
+                let btnClass = "w-full text-left p-4 md:p-5 rounded-2xl border-2 transition-all duration-200 text-base md:text-lg font-sans font-medium ";
+                
+                if (!state.isFeedbackMode) {
+                    btnClass += "bg-slate-800 border-slate-700 hover:border-cyan-500 hover:bg-slate-700 hover:-translate-y-1 hover:shadow-lg";
+                } else {
+                    if (opt.isCorrect) {
+                        btnClass += "bg-emerald-900/40 border-emerald-500 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.2)]";
+                    } else if (idx === state.selectedOption) {
+                        btnClass += "bg-red-900/40 border-red-500 text-red-100 shadow-[0_0_15px_rgba(239,68,68,0.2)]";
+                    } else {
+                        btnClass += "bg-slate-800/50 border-slate-800 opacity-40";
+                    }
+                }
+
+                btn.className = btnClass;
+                btn.innerText = opt.text;
+                if (!state.isFeedbackMode) {
+                    btn.onclick = () => window.handleAnswer(idx);
+                }
+                container.appendChild(btn);
+            });
+
+            if (state.isFeedbackMode) {
+                renderBattleFeedback();
+            }
+        }
+
+        function renderBattleFeedback() {
+            const panel = document.getElementById('battle-feedback-panel');
+            const box = document.getElementById('feedback-box');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const text = document.getElementById('feedback-text');
+            const warning = document.getElementById('feedback-warning');
+            const btnContinue = document.getElementById('btn-continue-battle');
+
+            const isCorrect = state.currentQuestion.options[state.selectedOption].isCorrect;
+
+            panel.classList.remove('hidden');
+            text.innerText = state.currentQuestion.options[state.selectedOption].exp;
+
+            if (isCorrect) {
+                box.className = "p-6 md:p-8 rounded-2xl border-2 mb-6 shadow-[0_10px_30px_rgba(16,185,129,0.1)] bg-emerald-950/80 border-emerald-800 text-emerald-100";
+                icon.className = "ph-fill ph-check-circle text-emerald-500";
+                title.innerText = "Bug Expurgado";
+                warning.classList.add('hidden');
+                btnContinue.innerText = "Avançar";
+            } else {
+                box.className = "p-6 md:p-8 rounded-2xl border-2 mb-6 shadow-[0_10px_30px_rgba(239,68,68,0.1)] bg-red-950/80 border-red-800 text-red-100";
+                icon.className = "ph-fill ph-warning-octagon text-red-500";
+                title.innerText = "Dano Crítico (-34 HP)";
+                warning.classList.remove('hidden');
+                btnContinue.innerText = "Recuar e Absorver a Falha";
+            }
+        }
+
+        // --- START ---
+        initApp();
+
+    </script>
+</body>
+</html>
