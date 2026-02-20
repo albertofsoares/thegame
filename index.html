@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel Explorer - Treino Anhanguera</title>
+    <title>Kernel Explorer - Treino Contínuo Anhanguera</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,7 @@
         body { font-family: 'Fira Code', monospace; background-color: #020617; } /* bg-slate-950 */
         .font-sans { font-family: 'Inter', sans-serif; }
         
-        /* Animações Customizadas (Dopamina e Gatilhos Mentais) */
+        /* Animações Customizadas */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes bounceGlow { 
@@ -42,7 +42,7 @@
         
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .animate-bug { animation: bounceGlow 2s infinite; }
+        .animate-bug { animation: bounceGlow 1.5s infinite; }
         .animate-combo { animation: pulseCombo 1s infinite; }
         .animate-shake { animation: shake 0.4s ease-in-out; }
         
@@ -57,9 +57,9 @@
 
         .hidden { display: none !important; }
 
-        /* Estilização da grelha (Grid) para evitar quebras */
+        /* Estilização da grelha */
         #grid-container {
-            touch-action: none; /* Previne scroll acidental no telemóvel ao jogar */
+            touch-action: none; 
         }
     </style>
 </head>
@@ -71,7 +71,7 @@
     <!-- HEADER / HUD -->
     <header id="hud" class="hidden w-full max-w-5xl bg-slate-900 border-b border-cyan-900/50 p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center sticky top-0 z-40 shadow-[0_0_15px_rgba(0,255,255,0.05)] gap-3">
         <div class="flex items-center gap-3 text-cyan-400 font-bold text-lg md:text-xl tracking-widest">
-            <i class="ph-fill ph-terminal-window text-2xl"></i> KERNEL EXPLORER
+            <i class="ph-fill ph-terminal-window text-2xl"></i> <span id="hud-level-text">SETOR 1</span>
         </div>
         
         <div class="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
@@ -88,7 +88,6 @@
                 <i class="ph-fill ph-heart text-lg"></i> <span id="hud-hp">100</span>%
             </div>
 
-            <!-- Botão de Logout -->
             <button onclick="logout()" class="ml-2 flex items-center justify-center p-2 rounded-lg bg-red-900/40 text-red-400 hover:bg-red-800/60 hover:text-red-200 border border-red-800/50 transition-colors" title="Desconectar">
                 <i class="ph-bold ph-sign-out text-lg"></i>
             </button>
@@ -97,20 +96,19 @@
 
     <main id="main-content" class="flex-1 w-full max-w-5xl flex flex-col items-center justify-center p-2 sm:p-4 relative">
         
-        <!-- TELA: CARREGAMENTO -->
+        <!-- CARREGAMENTO -->
         <div id="screen-loading" class="flex flex-col items-center justify-center w-full h-full min-h-[50vh]">
             <i class="ph ph-spinner-gap animate-spin text-cyan-500 text-6xl mb-4"></i>
-            <p class="text-cyan-500 font-mono tracking-widest uppercase text-center px-4">Carregando Módulos do Sistema...</p>
+            <p class="text-cyan-500 font-mono tracking-widest uppercase text-center px-4">Iniciando Kernel Explorer...</p>
         </div>
 
-        <!-- TELA: LOGIN / CADASTRO -->
+        <!-- AUTH -->
         <div id="screen-auth" class="hidden w-full max-w-md animate-fade-in relative z-50 my-auto pt-10">
             <div class="bg-slate-900/90 p-8 rounded-3xl border border-cyan-800/50 shadow-[0_20px_50px_rgba(0,255,255,0.05)] text-center relative overflow-hidden backdrop-blur-sm">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
-                
                 <i class="ph-fill ph-fingerprint text-cyan-500 text-6xl mx-auto mb-4 drop-shadow-[0_0_15px_rgba(0,255,255,0.3)] inline-block"></i>
                 <h2 class="text-2xl font-black text-white mb-2 tracking-wide font-sans uppercase">Autenticação</h2>
-                <p class="text-slate-400 text-sm mb-6 font-sans">Identifique-se para gravar seu progresso na memória não-volátil (Firestore).</p>
+                <p class="text-slate-400 text-sm mb-6 font-sans">Identifique-se para gravar seu progresso na memória não-volátil.</p>
 
                 <form id="auth-form" class="space-y-4 text-left" onsubmit="event.preventDefault();">
                     <div>
@@ -122,10 +120,7 @@
                         <input type="password" id="auth-password" required minlength="6" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-sans" placeholder="Mínimo 6 caracteres">
                     </div>
                     
-                    <!-- Feedback de Erro -->
-                    <div id="auth-error" class="hidden text-red-400 text-xs font-bold p-3 bg-red-950/50 border border-red-900 rounded-lg text-center font-sans">
-                        Mensagem de erro
-                    </div>
+                    <div id="auth-error" class="hidden text-red-400 text-xs font-bold p-3 bg-red-950/50 border border-red-900 rounded-lg text-center font-sans"></div>
 
                     <div class="flex gap-3 pt-4">
                         <button type="button" onclick="handleAuth('login', event)" class="flex-1 bg-cyan-700 hover:bg-cyan-600 text-white p-3 rounded-xl font-bold tracking-widest uppercase transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] border border-cyan-500 text-sm flex justify-center items-center gap-2">
@@ -139,39 +134,45 @@
             </div>
         </div>
 
-        <!-- TELA: MENU PRINCIPAL -->
-        <div id="screen-menu" class="hidden w-full space-y-8 animate-fade-in">
-            <div class="bg-slate-900/80 p-6 md:p-10 rounded-3xl border border-cyan-800/50 shadow-[0_20px_50px_rgba(0,255,255,0.05)] text-center relative overflow-hidden mt-4">
+        <!-- DASHBOARD (NOVO MENU INFINITO) -->
+        <div id="screen-dashboard" class="hidden w-full max-w-2xl animate-fade-in my-auto">
+            <div class="bg-slate-900/80 p-8 md:p-12 rounded-3xl border border-cyan-800/50 shadow-[0_20px_50px_rgba(0,255,255,0.05)] text-center relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
                 
-                <i class="ph-fill ph-cpu text-cyan-500 text-6xl sm:text-7xl mx-auto mb-6 drop-shadow-[0_0_15px_rgba(0,255,255,0.3)] inline-block"></i>
-                <h2 class="text-3xl sm:text-4xl font-black text-white mb-4 tracking-wide font-sans">Sistemas Operacionais</h2>
-                <p class="text-slate-400 text-sm md:text-base leading-relaxed mb-8 max-w-2xl mx-auto font-sans">
-                    Bem-vindo à placa-mãe. Recupere dados (Amarelo), colete energia (Coração) e destrua os Bugs (Vermelho) utilizando o seu conhecimento rigoroso da Unidade 1 da Anhanguera.
+                <i class="ph-fill ph-cpu text-cyan-500 text-7xl mx-auto mb-6 drop-shadow-[0_0_15px_rgba(0,255,255,0.3)] inline-block"></i>
+                <h2 class="text-3xl sm:text-4xl font-black text-white mb-2 tracking-wide font-sans">Sistemas Operacionais</h2>
+                <p class="text-slate-400 text-sm md:text-base mb-8 font-sans">
+                    Modo Infinito. Os bugs (vermelhos) agora caçam-no pelo mapa.
                 </p>
                 
-                <div class="flex items-center justify-center gap-2 mb-8 opacity-70">
-                    <span class="h-px bg-slate-600 flex-1 max-w-[80px]"></span>
-                    <span class="text-xs text-cyan-400 font-bold tracking-widest uppercase">Selecione o Setor</span>
-                    <span class="h-px bg-slate-600 flex-1 max-w-[80px]"></span>
+                <div class="grid grid-cols-2 gap-4 mb-10 max-w-lg mx-auto">
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                        <div class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Setor Recorde</div>
+                        <div class="text-2xl font-black text-cyan-400" id="dash-max-floor">1</div>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                        <div class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Bits Totais</div>
+                        <div class="text-2xl font-black text-yellow-500 flex items-center justify-center gap-1">
+                            <i class="ph-fill ph-lightning"></i> <span id="dash-xp">0</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <div id="levels-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                    <!-- Gerado via JS -->
-                </div>
+                <button onclick="startLevel()" class="w-full bg-cyan-700 hover:bg-cyan-600 border-2 border-cyan-400 text-white px-8 py-5 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] flex items-center justify-center gap-3 text-lg">
+                    <i class="ph-fill ph-play"></i> INICIAR TREINO
+                </button>
             </div>
         </div>
 
-        <!-- TELA: JOGANDO (MAPA) -->
+        <!-- JOGANDO (MAPA) -->
         <div id="screen-playing" class="hidden w-full flex flex-col items-center animate-fade-in">
             <div class="mb-4 flex items-center justify-between w-full max-w-2xl bg-slate-800/80 px-4 py-3 rounded-xl border border-slate-700 shadow-lg">
-                <span id="playing-level-name" class="text-cyan-400 font-bold uppercase tracking-wider text-sm sm:text-base truncate mr-4">Nível</span>
-                <button onclick="setGameState('menu')" class="text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition-colors flex-shrink-0 flex items-center gap-1">
+                <span id="playing-level-name" class="text-cyan-400 font-bold uppercase tracking-wider text-sm sm:text-base truncate mr-4">Tema: Fundamentos</span>
+                <button onclick="abortGame()" class="text-slate-400 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition-colors flex-shrink-0 flex items-center gap-1">
                     <i class="ph-bold ph-power"></i> Abortar
                 </button>
             </div>
 
-            <!-- LABIRINTO (Ajustado para mapas maiores) -->
             <div id="grid-container" class="bg-slate-950 border-4 border-slate-800 rounded-xl p-1 sm:p-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] grid gap-[1px] sm:gap-[2px] max-w-full overflow-x-auto">
                 <!-- Gerado via JS -->
             </div>
@@ -185,40 +186,35 @@
                 <button onclick="movePlayer(1, 0)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform"><i class="ph-bold ph-caret-down text-white text-2xl"></i></button>
                 <button onclick="movePlayer(0, 1)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform"><i class="ph-bold ph-caret-right text-white text-2xl"></i></button>
             </div>
-            <p class="mt-6 text-slate-500 text-xs hidden lg:block uppercase tracking-widest font-bold">Dica: Utilize as setas direcionais do teclado.</p>
+            <p class="mt-6 text-slate-500 text-xs hidden lg:block uppercase tracking-widest font-bold">Atenção: Os Bugs movem-se sozinhos. Seja rápido.</p>
         </div>
 
-        <!-- TELA: BATALHA & FEEDBACK -->
+        <!-- BATALHA -->
         <div id="screen-battle" class="hidden w-full max-w-3xl bg-slate-900 border-2 border-red-900/80 rounded-3xl p-6 md:p-10 shadow-[0_20px_50px_rgba(239,68,68,0.15)] animate-slide-up my-4">
             <div class="flex items-center gap-4 mb-6 md:mb-8 border-b border-red-900/50 pb-5">
                 <div class="p-3 md:p-4 bg-red-950 rounded-2xl border border-red-900 shadow-inner">
                     <i class="ph-fill ph-bug text-red-500 text-3xl md:text-4xl animate-pulse"></i>
                 </div>
                 <div>
-                    <h2 class="text-xl md:text-2xl font-black text-red-400 uppercase tracking-widest">Ameaça Detetada</h2>
-                    <p class="text-red-500/70 text-xs md:text-sm font-sans mt-1">Conhecimento exigido para expurgo.</p>
+                    <h2 class="text-xl md:text-2xl font-black text-red-400 uppercase tracking-widest">Colisão Detetada</h2>
+                    <p class="text-red-500/70 text-xs md:text-sm font-sans mt-1">O tempo parou. Prove o seu conhecimento.</p>
                 </div>
             </div>
             
-            <p id="battle-question" class="text-lg md:text-2xl text-white mb-8 leading-relaxed font-sans font-semibold border-l-4 border-cyan-500 pl-4">
-                Pergunta aqui
-            </p>
+            <p id="battle-question" class="text-lg md:text-2xl text-white mb-8 leading-relaxed font-sans font-semibold border-l-4 border-cyan-500 pl-4"></p>
 
-            <div id="battle-options" class="space-y-3 font-sans">
-                <!-- Gerado via JS -->
-            </div>
+            <div id="battle-options" class="space-y-3 font-sans"></div>
 
-            <!-- PAINEL EDUCATIVO (A Repetição Espaçada) -->
             <div id="battle-feedback-panel" class="hidden mt-8 animate-fade-in">
                 <div id="feedback-box" class="p-6 md:p-8 rounded-2xl border-2 mb-6 shadow-lg">
                     <div class="flex items-center gap-3 mb-4">
                         <i id="feedback-icon" class="text-3xl"></i>
-                        <h3 id="feedback-title" class="font-black uppercase tracking-widest text-lg md:text-xl">Título</h3>
+                        <h3 id="feedback-title" class="font-black uppercase tracking-widest text-lg md:text-xl"></h3>
                     </div>
-                    <p id="feedback-text" class="leading-relaxed text-base md:text-lg font-sans text-slate-200">Explicação rigorosa.</p>
+                    <p id="feedback-text" class="leading-relaxed text-base md:text-lg font-sans text-slate-200"></p>
                     <div id="feedback-warning" class="hidden mt-5 bg-red-900/40 border border-red-800/50 p-4 rounded-xl flex items-start gap-3">
                         <i class="ph-fill ph-warning-circle text-red-400 text-xl mt-0.5"></i>
-                        <p class="text-sm md:text-base text-red-300 font-medium">O Bug resistiu. Ele permanecerá no mapa bloqueando o caminho. Memorize a explicação e ataque novamente!</p>
+                        <p class="text-sm md:text-base text-red-300 font-medium">O Bug sobreviveu e continua a perseguir. Fuja ou ataque novamente.</p>
                     </div>
                 </div>
                 
@@ -228,58 +224,37 @@
             </div>
         </div>
 
-        <!-- TELA: GAME OVER -->
+        <!-- GAME OVER -->
         <div id="screen-game-over" class="hidden text-center animate-slide-up bg-slate-900 border-2 border-red-900/50 p-8 md:p-12 rounded-3xl shadow-[0_20px_50px_rgba(239,68,68,0.2)] max-w-2xl w-full">
             <i class="ph-fill ph-warning-octagon text-red-600 text-7xl md:text-8xl mx-auto mb-6 inline-block animate-pulse"></i>
             <h1 class="text-4xl md:text-6xl font-black text-red-500 mb-4 tracking-widest uppercase">Kernel Panic</h1>
             <div class="w-20 h-1 bg-red-800 mx-auto mb-6"></div>
             <p class="text-slate-300 mb-10 text-base md:text-lg font-sans leading-relaxed">
-                A integridade do sistema atingiu <span class="text-red-400 font-bold">0%</span>. O setor atual colapsou.<br><br>
-                Mas a falha faz parte do processo de aprendizagem! O seu cérebro já registou o que não fazer. Recarregue os sistemas e tente novamente.
+                A integridade do sistema atingiu <span class="text-red-400 font-bold">0%</span>. O setor colapsou.<br><br>
+                A repetição espaçada é o segredo do sucesso. O seu cérebro já gravou a falha, levante-se e tente outra vez.
             </p>
-            <button onclick="setGameState('menu')" class="w-full sm:w-auto bg-red-900 hover:bg-red-800 border-2 border-red-500 text-white px-10 py-5 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]">
-                Reiniciar Sistema
+            <button onclick="setGameState('dashboard')" class="w-full sm:w-auto bg-red-900 hover:bg-red-800 border-2 border-red-500 text-white px-10 py-5 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]">
+                Recalibrar Sistema
             </button>
         </div>
 
-        <!-- TELA: LEVEL COMPLETE -->
+        <!-- LEVEL COMPLETE (TRANSIÇÃO RÁPIDA) -->
         <div id="screen-level-complete" class="hidden text-center animate-slide-up bg-slate-900 border-2 border-emerald-900/50 p-8 md:p-12 rounded-3xl shadow-[0_20px_50px_rgba(16,185,129,0.1)] w-full max-w-2xl">
             <i class="ph-fill ph-check-circle text-emerald-500 text-7xl md:text-8xl mx-auto mb-6 inline-block"></i>
-            <h1 class="text-3xl md:text-5xl font-black text-emerald-400 mb-4 tracking-widest uppercase">Acesso Concedido</h1>
+            <h1 class="text-3xl md:text-5xl font-black text-emerald-400 mb-4 tracking-widest uppercase">Setor Limpo</h1>
             <div class="w-20 h-1 bg-emerald-800 mx-auto mb-6"></div>
-            <p class="text-slate-300 mb-8 text-lg font-sans">Setor higienizado e memórias consolidadas na sinapse.</p>
+            <p class="text-slate-300 mb-8 text-lg font-sans">Avançando profundamente no Sistema Operacional...</p>
             
             <div class="bg-slate-950 border-2 border-emerald-900/50 p-6 md:p-8 rounded-2xl inline-block mb-10 shadow-inner w-full sm:w-auto">
-                <div class="text-emerald-500 text-xs md:text-sm font-bold tracking-widest uppercase mb-3">Recompensa Base do Setor</div>
+                <div class="text-emerald-500 text-xs md:text-sm font-bold tracking-widest uppercase mb-3">Recompensa de Piso</div>
                 <div class="text-4xl md:text-6xl font-black text-yellow-500 flex items-center justify-center gap-3 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
                     <i class="ph-fill ph-lightning"></i> +500 BITS
                 </div>
             </div>
 
             <div>
-                <button onclick="setGameState('menu')" class="w-full sm:w-auto bg-emerald-900 hover:bg-emerald-800 border-2 border-emerald-500 text-white px-10 py-5 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]">
-                    Regressar ao Menu Principal
-                </button>
-            </div>
-        </div>
-
-        <!-- TELA: GAME BEATEN -->
-        <div id="screen-game-beaten" class="hidden text-center animate-slide-up bg-gradient-to-b from-slate-900 to-cyan-950/40 border-2 border-cyan-700 p-8 md:p-14 rounded-[2rem] shadow-[0_20px_60px_rgba(0,255,255,0.2)] w-full max-w-4xl">
-            <i class="ph-fill ph-trophy text-yellow-400 text-8xl md:text-9xl mx-auto mb-8 drop-shadow-[0_0_30px_rgba(250,204,21,0.8)] animate-pulse inline-block"></i>
-            <h1 class="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-6 tracking-widest uppercase">
-                Mestre de S.O.
-            </h1>
-            <p class="text-white mb-6 text-xl md:text-3xl max-w-2xl mx-auto leading-relaxed font-sans font-bold">
-                Unidade 1 concluída com excelência militar!
-            </p>
-            <div class="w-32 h-1 bg-cyan-600 mx-auto mb-8"></div>
-            <p class="text-cyan-100/80 mb-12 max-w-2xl mx-auto text-base md:text-xl font-sans leading-relaxed">
-                Com esta repetição ativa, o seu cérebro gravou a diferença entre Monotarefa e Lote, as arquiteturas do Unix e do Windows 2000, e a função exata do Kernel. Não importa a medicação: a sua disciplina superou tudo. Você será o melhor da turma.
-            </p>
-            
-            <div>
-                <button onclick="setGameState('menu')" class="w-full sm:w-auto bg-cyan-700 hover:bg-cyan-600 text-white px-12 py-6 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_10px_30px_rgba(6,182,212,0.5)] border-2 border-cyan-400 text-lg md:text-xl">
-                    Voltar ao Terminal
+                <button onclick="nextFloor()" class="w-full sm:w-auto bg-emerald-900 hover:bg-emerald-800 border-2 border-emerald-500 text-white px-10 py-5 rounded-2xl font-black tracking-widest uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]">
+                    Avançar para o Próximo Setor
                 </button>
             </div>
         </div>
@@ -292,7 +267,7 @@
         import { getAuth, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- DADOS DO JOGO (Expansão rigorosa da Unidade 1) ---
+        // --- CONTEÚDO EDUCACIONAL (Unidade 1) ---
         const QUESTIONS_POOL = {
             level1: [ 
                 { q: "Qual é a definição exata de Sistema Operacional segundo o material?", options: [ { text: "Um hardware dedicado a traduzir linguagem de máquina.", isCorrect: false, exp: "Incorreto. É um software." }, { text: "Um conjunto de rotinas executado pelo processador que gerencia recursos de hardware e software.", isCorrect: true, exp: "Correto! (Slide 5). Controla o funcionamento do computador gerenciando CPU, memória e E/S." }, { text: "Um programa que funciona apenas como antivírus do hardware.", isCorrect: false, exp: "Falso." } ] },
@@ -322,9 +297,8 @@
             ]
         };
 
-        // --- MAPAS MAIORES E MAIS COMPLEXOS ---
-        const LEVELS = [
-            { id: 'l1', name: 'Setor 1: Fundamentos', pool: 'level1', map: [
+        const BASE_LEVELS = [
+            { name: 'Fundamentos', pool: 'level1', map: [
                 [1,1,1,1,1,1,1,1,1,1,1],
                 [1,2,0,5,1,0,5,0,0,5,1],
                 [1,1,0,1,1,4,1,1,1,0,1],
@@ -333,7 +307,7 @@
                 [1,5,0,0,0,0,0,5,4,0,1],
                 [1,1,1,1,1,1,1,1,3,1,1]
             ]},
-            { id: 'l2', name: 'Setor 2: Lote e Monotarefa', pool: 'level2', map: [
+            { name: 'Lote e Monotarefa', pool: 'level2', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,2,0,0,1,5,0,0,4,5,1,1],
                 [1,1,1,0,1,1,1,0,1,1,1,1],
@@ -342,7 +316,7 @@
                 [1,0,0,5,1,0,4,0,0,3,0,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1]
             ]},
-            { id: 'l3', name: 'Setor 3: Multiprocessamento', pool: 'level3', map: [
+            { name: 'Multiprocessamento', pool: 'level3', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,5,0,0,1,0,5,4,0,1,5,1,1],
                 [1,0,1,0,1,0,1,1,0,1,0,1,1],
@@ -351,7 +325,7 @@
                 [1,2,0,5,4,0,0,0,5,0,0,0,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1,1]
             ]},
-            { id: 'l4', name: 'Setor 4: UNIX & Win2000', pool: 'level4', map: [
+            { name: 'UNIX & Win2000', pool: 'level4', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,2,0,5,1,5,0,1,5,0,0,3,1],
                 [1,1,1,0,1,1,0,1,0,1,1,1,1],
@@ -360,7 +334,7 @@
                 [1,0,0,0,6,0,4,0,5,0,0,1,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1,1]
             ]},
-            { id: 'l5', name: 'Setor 5: O Núcleo (Kernel)', pool: 'level5', map: [
+            { name: 'O Núcleo (Kernel)', pool: 'level5', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
                 [1,2,0,0,1,5,0,4,0,1,5,0,0,3,1],
                 [1,1,1,0,1,0,1,1,0,1,1,1,1,0,1],
@@ -374,9 +348,9 @@
         // --- ESTADO GLOBAL ---
         const state = {
             user: null,
-            gameState: 'loading', // loading, auth, menu, playing, battle, game-over, level-complete, game-beaten
-            progress: { xp: 0, levelsCompleted: [] },
-            currentLevelIdx: 0,
+            gameState: 'loading', // loading, auth, dashboard, playing, battle, game-over, level-complete
+            progress: { xp: 0, maxFloor: 1 },
+            currentFloor: 1,
             grid: [],
             playerPos: { r: 1, c: 1 },
             hp: 100,
@@ -386,6 +360,8 @@
             selectedOption: null,
             isFeedbackMode: false
         };
+
+        window.bugInterval = null; // Gerenciador de IA dos Inimigos
 
         // --- FIREBASE SETUP ---
         const userConfig = {
@@ -402,19 +378,14 @@
         const db = getFirestore(app);
         const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'kernel-explorer-anhanguera';
 
-        // --- FUNÇÕES DE ANIMAÇÃO / DOPAMINA ---
+        // --- ANIMAÇÕES GERAIS ---
         function spawnFloatingText(text, colorClass) {
             const container = document.getElementById('float-container');
             const el = document.createElement('div');
             el.className = `floating-text ${colorClass} text-xl md:text-3xl`;
             el.innerText = text;
-            
-            const x = 30 + Math.random() * 40;
-            const y = 30 + Math.random() * 20;
-            
-            el.style.left = `${x}%`;
-            el.style.top = `${y}%`;
-            
+            el.style.left = `${30 + Math.random() * 40}%`;
+            el.style.top = `${30 + Math.random() * 20}%`;
             container.appendChild(el);
             setTimeout(() => el.remove(), 1500);
         }
@@ -422,11 +393,11 @@
         function triggerScreenShake() {
             const main = document.getElementById('main-content');
             main.classList.remove('animate-shake');
-            void main.offsetWidth; // trigger reflow
+            void main.offsetWidth;
             main.classList.add('animate-shake');
         }
 
-        // --- AUTH & LOGIN WINDOW FUNCTIONS ---
+        // --- AUTH ---
         window.handleAuth = async (action, event) => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -445,21 +416,15 @@
             btn.disabled = true;
 
             try {
-                if (action === 'login') {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else if (action === 'register') {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                }
-                // O fluxo segue naturalmente pelo onAuthStateChanged abaixo
+                if (action === 'login') await signInWithEmailAndPassword(auth, email, password);
+                else if (action === 'register') await createUserWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 console.error("Auth erro:", error);
                 let msg = "Falha na autenticação.";
-                
                 if (error.code === 'auth/email-already-in-use') msg = "Este e-mail já está cadastrado.";
-                else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') msg = "Credenciais inválidas ou senha incorreta.";
+                else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') msg = "Credenciais inválidas.";
                 else if (error.code === 'auth/weak-password') msg = "A senha deve ter pelo menos 6 caracteres.";
-                else if (error.code === 'auth/invalid-email') msg = "O formato do e-mail é inválido.";
-
+                
                 errorDiv.innerText = msg;
                 errorDiv.classList.remove('hidden');
                 btn.innerHTML = originalHTML;
@@ -468,16 +433,15 @@
         };
 
         window.logout = async () => {
+            clearBugInterval();
             await signOut(auth);
             state.user = null;
-            state.progress = { xp: 0, levelsCompleted: [] };
+            state.progress = { xp: 0, maxFloor: 1 };
             
-            // Limpa o form
             document.getElementById('auth-email').value = '';
             document.getElementById('auth-password').value = '';
             document.getElementById('auth-error').classList.add('hidden');
             
-            // Reabilita botões caso tenham ficado presos
             const btns = document.querySelectorAll('#auth-form button');
             btns.forEach(b => { 
                 b.disabled = false; 
@@ -485,21 +449,42 @@
                     b.innerHTML = b.innerHTML.replace('Processando...', b.onclick.toString().includes('login') ? 'Entrar' : 'Novo');
                 }
             });
-
             setGameState('auth');
         };
 
-        // --- EXPOSED FUNCTIONS TO WINDOW ---
+        // --- GLOBAL LOGIC ---
         window.setGameState = (newState) => {
             state.gameState = newState;
             updateUI();
         };
 
-        window.startLevel = (idx) => {
-            state.currentLevelIdx = idx;
-            const level = LEVELS[idx];
-            state.grid = level.map.map(row => [...row]);
+        // --- GAMEPLAY MECHANICS ---
+        window.startLevel = () => {
+            if(state.gameState === 'dashboard') {
+                // Ao iniciar do dashboard, começa do andar máximo gravado
+                state.currentFloor = state.progress.maxFloor || 1; 
+                state.hp = 100;
+                state.combo = 0;
+            }
+
+            const levelIdx = (state.currentFloor - 1) % BASE_LEVELS.length;
+            const baseLevel = BASE_LEVELS[levelIdx];
             
+            // Deep copy map
+            state.grid = baseLevel.map.map(row => [...row]);
+
+            // Dificuldade Escalonável Infinitamente (adiciona mais bugs a cada 5 andares)
+            let extraBugs = Math.floor((state.currentFloor - 1) / BASE_LEVELS.length) * 2;
+            while(extraBugs > 0) {
+                let r = Math.floor(Math.random() * state.grid.length);
+                let c = Math.floor(Math.random() * state.grid[0].length);
+                if (state.grid[r][c] === 0) {
+                    state.grid[r][c] = 4;
+                    extraBugs--;
+                }
+            }
+
+            // Localizar Posição Inicial
             for(let r=0; r < state.grid.length; r++) {
                 for(let c=0; c < state.grid[r].length; c++) {
                     if(state.grid[r][c] === 2) {
@@ -508,11 +493,95 @@
                     }
                 }
             }
-            state.hp = 100;
-            state.combo = 0;
+
             state.gameState = 'playing';
             updateUI();
+            
+            // Iniciar a Inteligência Artificial (Velocidade aumenta gradualmente mas com limite para não ficar frustrante)
+            clearBugInterval();
+            let aiSpeed = Math.max(650, 1100 - (state.currentFloor * 30));
+            window.bugInterval = setInterval(moveBugs, aiSpeed);
         };
+
+        window.abortGame = () => {
+            clearBugInterval();
+            setGameState('dashboard');
+        };
+
+        window.nextFloor = () => {
+            state.currentFloor++;
+            saveProgress(500, state.currentFloor);
+            startLevel();
+        };
+
+        function clearBugInterval() {
+            if (window.bugInterval) {
+                clearInterval(window.bugInterval);
+                window.bugInterval = null;
+            }
+        }
+
+        // INTELIGÊNCIA ARTIFICIAL: COMPORTAMENTO DOS BUGS
+        function moveBugs() {
+            if (state.gameState !== 'playing') return;
+
+            let bugs = [];
+            for (let r = 0; r < state.grid.length; r++) {
+                for (let c = 0; c < state.grid[r].length; c++) {
+                    if (state.grid[r][c] === 4) bugs.push({r, c});
+                }
+            }
+
+            let triggeredBattleThisTick = false;
+
+            bugs.forEach(bug => {
+                if (triggeredBattleThisTick) return;
+
+                let dr = state.playerPos.r - bug.r;
+                let dc = state.playerPos.c - bug.c;
+
+                // Move de forma gulosa (Greedy) em direção ao jogador
+                let possibleMoves = [];
+                if (Math.abs(dr) > 0) possibleMoves.push({ r: bug.r + Math.sign(dr), c: bug.c });
+                if (Math.abs(dc) > 0) possibleMoves.push({ r: bug.r, c: bug.c + Math.sign(dc) });
+
+                // Baralhar para evitar ficarem presos num canto (movimento rudimentar)
+                possibleMoves.sort(() => Math.random() - 0.5);
+
+                for (let move of possibleMoves) {
+                    // Colisão frontal com o jogador
+                    if (move.r === state.playerPos.r && move.c === state.playerPos.c) {
+                        triggerBattle(bug.r, bug.c);
+                        triggeredBattleThisTick = true;
+                        break;
+                    }
+                    // Mover para célula vazia
+                    if (state.grid[move.r][move.c] === 0) {
+                        state.grid[bug.r][bug.c] = 0;
+                        state.grid[move.r][move.c] = 4;
+                        break;
+                    }
+                }
+            });
+
+            if (!triggeredBattleThisTick) {
+                renderGrid(); // Atualizar UI após os movimentos dos bugs
+            }
+        }
+
+        function triggerBattle(r, c) {
+            clearBugInterval(); // Pára os inimigos
+            state.activeBugCoords = { r, c };
+            
+            const levelIdx = (state.currentFloor - 1) % BASE_LEVELS.length;
+            const pool = QUESTIONS_POOL[BASE_LEVELS[levelIdx].pool];
+            state.currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+            
+            state.selectedOption = null;
+            state.isFeedbackMode = false;
+            state.gameState = 'battle';
+            updateUI();
+        }
 
         window.movePlayer = (dr, dc) => {
             if (state.gameState !== 'playing') return;
@@ -523,48 +592,38 @@
             if (newR < 0 || newR >= state.grid.length || newC < 0 || newC >= state.grid[0].length) return;
 
             const targetCell = state.grid[newR][newC];
-            if (targetCell === 1) return; // Wall
+            if (targetCell === 1) return; // Parede
 
-            if (targetCell === 5) { // XP (Moeda)
+            if (targetCell === 5) { // Moeda
                 state.grid[newR][newC] = 0;
-                const multiplier = state.combo > 0 ? state.combo : 1;
-                const xpGain = 10 * multiplier;
-                saveProgress(xpGain);
+                const xpGain = 10 * (state.combo > 0 ? state.combo : 1);
+                saveProgress(xpGain, state.progress.maxFloor);
                 spawnFloatingText(`+${xpGain} BITS`, 'text-yellow-400');
                 state.playerPos = { r: newR, c: newC };
-                renderGrid();
             } 
-            else if (targetCell === 6) { // Cura (Coração)
+            else if (targetCell === 6) { // Cura
                 state.grid[newR][newC] = 0;
                 const heal = 34;
                 state.hp = Math.min(100, state.hp + heal);
                 spawnFloatingText(`+${heal} HP`, 'text-emerald-400');
                 updateHUD();
                 state.playerPos = { r: newR, c: newC };
-                renderGrid();
             }
-            else if (targetCell === 4) { // Bug (Batalha)
-                state.activeBugCoords = { r: newR, c: newC };
-                const pool = QUESTIONS_POOL[LEVELS[state.currentLevelIdx].pool];
-                state.currentQuestion = pool[Math.floor(Math.random() * pool.length)];
-                state.selectedOption = null;
-                state.isFeedbackMode = false;
-                state.gameState = 'battle';
-                updateUI();
+            else if (targetCell === 4) { // Colisão c/ Inimigo provocado pelo jogador
+                triggerBattle(newR, newC);
+                return; // Impede o render grid imediato
             } 
-            else if (targetCell === 3) { // Saída (Concluir nível)
-                saveProgress(500, LEVELS[state.currentLevelIdx].id);
-                if (state.currentLevelIdx === LEVELS.length - 1) {
-                    state.gameState = 'game_beaten';
-                } else {
-                    state.gameState = 'level_complete';
-                }
+            else if (targetCell === 3) { // Saída
+                clearBugInterval();
+                state.gameState = 'level-complete';
                 updateUI();
+                return;
             } 
-            else { // Chão livre
+            else { // Vazio
                 state.playerPos = { r: newR, c: newC };
-                renderGrid();
             }
+            
+            renderGrid();
         };
 
         window.handleAnswer = (idx) => {
@@ -579,21 +638,29 @@
             if (isCorrect) {
                 state.combo += 1;
                 const xpGain = 50 * state.combo;
-                saveProgress(xpGain);
+                saveProgress(xpGain, state.progress.maxFloor);
                 spawnFloatingText(`COMBO x${state.combo}!`, 'text-orange-500');
                 
+                // Expurga o bug
                 state.grid[state.activeBugCoords.r][state.activeBugCoords.c] = 0;
                 state.playerPos = { r: state.activeBugCoords.r, c: state.activeBugCoords.c };
                 state.gameState = 'playing';
+                
+                // Retoma o movimento inimigo
+                let aiSpeed = Math.max(650, 1100 - (state.currentFloor * 30));
+                window.bugInterval = setInterval(moveBugs, aiSpeed);
             } else {
                 state.combo = 0;
                 triggerScreenShake();
                 state.hp -= 34;
                 
                 if (state.hp <= 0) {
-                    state.gameState = 'game_over';
+                    state.gameState = 'game-over';
                 } else {
                     state.gameState = 'playing';
+                    // Retoma o movimento inimigo, mas o bug não morre!
+                    let aiSpeed = Math.max(650, 1100 - (state.currentFloor * 30));
+                    window.bugInterval = setInterval(moveBugs, aiSpeed);
                 }
             }
             updateUI();
@@ -610,72 +677,67 @@
             }
         });
 
-        // --- FIREBASE LOGIC ---
+        // --- FIREBASE SYNC ---
         async function initApp() {
             try {
-                // Tenta fazer login via token customizado APENAS se provido no ambiente imersivo (Canvas Preview)
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 }
-                // Se não houver token, aguardamos o onAuthStateChanged agir. Se user for null, mostra a tela de Auth.
             } catch (e) {
                 console.error("Auth Erro Init:", e);
-                // Erro silencioso no console, onAuthStateChanged vai lidar com mostrar a tela de Auth
             }
         }
 
         onAuthStateChanged(auth, (user) => {
             state.user = user;
             if (user) {
-                // Usuário autenticado, buscar progresso
-                const ref = doc(db, 'artifacts', APP_ID, 'users', user.uid, 'gameData', 'progress');
+                const ref = doc(db, 'artifacts', APP_ID, 'users', user.uid, 'gameData', 'progressV2');
                 onSnapshot(ref, (snap) => {
                     if (snap.exists()) {
                         state.progress = snap.data();
+                        // Migração caso seja dados antigos
+                        if(!state.progress.maxFloor) state.progress.maxFloor = 1;
                     } else {
-                        // Novo usuário, criar doc default
-                        setDoc(ref, { xp: 0, levelsCompleted: [] });
-                        state.progress = { xp: 0, levelsCompleted: [] };
+                        setDoc(ref, { xp: 0, maxFloor: 1 });
+                        state.progress = { xp: 0, maxFloor: 1 };
                     }
                     
                     if (state.gameState === 'loading' || state.gameState === 'auth') {
-                        state.gameState = 'menu';
+                        state.gameState = 'dashboard';
                         updateUI();
                     } else {
                         updateHUD();
-                        if(state.gameState === 'menu') renderMenu(); 
+                        if(state.gameState === 'dashboard') renderDashboard(); 
                     }
                 }, (error) => {
                     console.error("Firestore error:", error);
                 });
             } else {
-                // Usuário NÃO autenticado -> Vai para Auth
+                clearBugInterval();
                 state.gameState = 'auth';
                 updateUI();
             }
         });
 
-        async function saveProgress(amount, levelId = null) {
+        async function saveProgress(xpAmount, floorReached = state.progress.maxFloor) {
             if (!state.user) return;
-            const ref = doc(db, 'artifacts', APP_ID, 'users', state.user.uid, 'gameData', 'progress');
-            const newLevels = levelId && !state.progress.levelsCompleted.includes(levelId)
-                ? [...state.progress.levelsCompleted, levelId]
-                : state.progress.levelsCompleted;
+            const ref = doc(db, 'artifacts', APP_ID, 'users', state.user.uid, 'gameData', 'progressV2');
             
-            state.progress.xp += amount;
-            state.progress.levelsCompleted = newLevels;
+            state.progress.xp += xpAmount;
+            if (floorReached > state.progress.maxFloor) {
+                state.progress.maxFloor = floorReached;
+            }
             updateHUD();
 
             await setDoc(ref, {
                 xp: state.progress.xp,
-                levelsCompleted: newLevels
+                maxFloor: state.progress.maxFloor
             }, { merge: true });
         }
 
-        // --- RENDERING LOGIC ---
+        // --- RENDERING ---
         function updateUI() {
-            // Adicionado 'auth' ao array de telas
-            ['loading', 'auth', 'menu', 'playing', 'battle', 'game-over', 'level-complete', 'game-beaten'].forEach(id => {
+            ['loading', 'auth', 'dashboard', 'playing', 'battle', 'game-over', 'level-complete'].forEach(id => {
                 document.getElementById(`screen-${id}`).classList.add('hidden');
             });
             
@@ -687,22 +749,28 @@
                 updateHUD();
             }
 
-            const currentScreen = document.getElementById(`screen-${state.gameState.replace('_', '-')}`);
+            const currentScreen = document.getElementById(`screen-${state.gameState}`);
             if(currentScreen) currentScreen.classList.remove('hidden');
 
-            if (state.gameState === 'menu') renderMenu();
+            if (state.gameState === 'dashboard') renderDashboard();
             if (state.gameState === 'playing') {
-                document.getElementById('playing-level-name').innerText = LEVELS[state.currentLevelIdx].name;
+                const levelIdx = (state.currentFloor - 1) % BASE_LEVELS.length;
+                document.getElementById('playing-level-name').innerText = `Tema: ${BASE_LEVELS[levelIdx].name}`;
                 renderGrid();
             }
             if (state.gameState === 'battle') renderBattleScreen();
         }
 
+        function renderDashboard() {
+            document.getElementById('dash-max-floor').innerText = state.progress.maxFloor;
+            document.getElementById('dash-xp').innerText = state.progress.xp;
+        }
+
         function updateHUD() {
-            if (!state.user) return; // Prevenção
+            if (!state.user) return;
             
-            const xpEl = document.getElementById('hud-xp');
-            xpEl.innerText = state.progress.xp;
+            document.getElementById('hud-level-text').innerText = `SETOR ${state.currentFloor}`;
+            document.getElementById('hud-xp').innerText = state.progress.xp;
             
             const comboEl = document.getElementById('hud-combo');
             const comboMult = document.getElementById('combo-multiplier');
@@ -718,7 +786,7 @@
             const hpContainer = document.getElementById('hud-hp-container');
             const hpText = document.getElementById('hud-hp');
             
-            if (state.gameState === 'menu' || state.gameState === 'game_beaten') {
+            if (state.gameState === 'dashboard') {
                 hpContainer.classList.add('hidden');
             } else {
                 hpContainer.classList.remove('hidden');
@@ -730,51 +798,6 @@
                     : 'bg-red-900/30 border-red-500/50 text-red-400 animate-pulse'
                 }`;
             }
-        }
-
-        function renderMenu() {
-            const container = document.getElementById('levels-container');
-            container.innerHTML = '';
-            
-            LEVELS.forEach((lvl, idx) => {
-                const isCompleted = state.progress.levelsCompleted.includes(lvl.id);
-                const isLocked = idx > 0 && !state.progress.levelsCompleted.includes(LEVELS[idx-1].id);
-                
-                let btnClass = "p-6 rounded-2xl border-2 flex flex-col items-center justify-center text-center transition-all duration-300 ";
-                let contentHTML = "";
-
-                if (isLocked) {
-                    btnClass += "bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed opacity-60 shadow-inner";
-                    contentHTML = `
-                        <div class="mb-4"><i class="ph-fill ph-lock-key text-4xl opacity-50"></i></div>
-                        <span class="font-bold mb-2 text-sm md:text-base">${lvl.name}</span>
-                        <div class="text-[10px] md:text-xs uppercase tracking-widest mt-1">Bloqueado</div>
-                    `;
-                } else if (isCompleted) {
-                    btnClass += "bg-cyan-950/40 border-cyan-700 text-cyan-300 hover:bg-cyan-900/60 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,255,255,0.2)] cursor-pointer";
-                    contentHTML = `
-                        <div class="mb-4"><i class="ph-fill ph-play-circle text-4xl md:text-5xl text-cyan-400"></i></div>
-                        <span class="font-bold mb-3 text-sm md:text-base">${lvl.name}</span>
-                        <div class="flex items-center gap-1 text-[10px] md:text-xs font-bold bg-cyan-900/50 px-3 py-1.5 rounded text-cyan-400 border border-cyan-800">
-                            <i class="ph-fill ph-check-circle"></i> VERIFICADO
-                        </div>
-                    `;
-                } else {
-                    btnClass += "bg-slate-800 border-cyan-500 text-white hover:bg-slate-700 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,255,255,0.3)] cursor-pointer";
-                    contentHTML = `
-                        <div class="mb-4"><i class="ph-fill ph-play-circle text-4xl md:text-5xl text-cyan-400"></i></div>
-                        <span class="font-bold mb-2 text-sm md:text-base">${lvl.name}</span>
-                    `;
-                }
-
-                const btn = document.createElement('button');
-                btn.className = btnClass;
-                btn.innerHTML = contentHTML;
-                if (!isLocked) {
-                    btn.onclick = () => window.startLevel(idx);
-                }
-                container.appendChild(btn);
-            });
         }
 
         function renderGrid() {
@@ -837,32 +860,23 @@
             
             state.currentQuestion.options.forEach((opt, idx) => {
                 const btn = document.createElement('button');
-                
                 let btnClass = "w-full text-left p-4 md:p-5 rounded-2xl border-2 transition-all duration-200 text-base md:text-lg font-sans font-medium ";
                 
                 if (!state.isFeedbackMode) {
                     btnClass += "bg-slate-800 border-slate-700 hover:border-cyan-500 hover:bg-slate-700 hover:-translate-y-1 hover:shadow-lg";
                 } else {
-                    if (opt.isCorrect) {
-                        btnClass += "bg-emerald-900/40 border-emerald-500 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.2)]";
-                    } else if (idx === state.selectedOption) {
-                        btnClass += "bg-red-900/40 border-red-500 text-red-100 shadow-[0_0_15px_rgba(239,68,68,0.2)]";
-                    } else {
-                        btnClass += "bg-slate-800/50 border-slate-800 opacity-40";
-                    }
+                    if (opt.isCorrect) btnClass += "bg-emerald-900/40 border-emerald-500 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.2)]";
+                    else if (idx === state.selectedOption) btnClass += "bg-red-900/40 border-red-500 text-red-100 shadow-[0_0_15px_rgba(239,68,68,0.2)]";
+                    else btnClass += "bg-slate-800/50 border-slate-800 opacity-40";
                 }
 
                 btn.className = btnClass;
                 btn.innerText = opt.text;
-                if (!state.isFeedbackMode) {
-                    btn.onclick = () => window.handleAnswer(idx);
-                }
+                if (!state.isFeedbackMode) btn.onclick = () => window.handleAnswer(idx);
                 container.appendChild(btn);
             });
 
-            if (state.isFeedbackMode) {
-                renderBattleFeedback();
-            }
+            if (state.isFeedbackMode) renderBattleFeedback();
         }
 
         function renderBattleFeedback() {
@@ -894,7 +908,6 @@
             }
         }
 
-        // --- START ---
         initApp();
 
     </script>
