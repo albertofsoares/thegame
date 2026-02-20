@@ -49,10 +49,6 @@
         #grid-container { touch-action: none; position: relative; }
         .grid-cell-content { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* Fog of War Classes */
-        .fog-dark { opacity: 0.05; filter: grayscale(100%); transition: opacity 0.3s; }
-        .fog-dim { opacity: 0.4; filter: grayscale(50%); transition: opacity 0.3s; }
-        .fog-clear { opacity: 1; filter: grayscale(0%); transition: opacity 0.2s; }
         .boss-cell { z-index: 25; }
 
         ::-webkit-scrollbar { width: 8px; }
@@ -143,7 +139,7 @@
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70"></div>
                 <i class="ph-fill ph-cpu text-cyan-500 text-7xl mx-auto mb-6 drop-shadow-[0_0_20px_rgba(0,255,255,0.5)] inline-block"></i>
                 <h2 class="text-3xl sm:text-4xl font-black text-white mb-2 tracking-wide font-sans">Sistemas Operacionais</h2>
-                <p class="text-cyan-100/70 text-sm md:text-base mb-8 font-sans font-medium">Treino Neuronal. O mapa cresce, a visão diminui. Engane a sua mente, consolide a teoria.</p>
+                <p class="text-cyan-100/70 text-sm md:text-base mb-8 font-sans font-medium">Treino Neuronal. O mapa cresce e a caçada inimiga acelera. Engane a sua mente, consolide a teoria.</p>
                 
                 <div class="grid grid-cols-3 gap-3 mb-10 max-w-xl mx-auto">
                     <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl shadow-inner">
@@ -215,7 +211,7 @@
                 <button onclick="movePlayer(1, 0)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform text-cyan-500"><i class="ph-bold ph-caret-down text-2xl"></i></button>
                 <button onclick="movePlayer(0, 1)" class="bg-slate-800 p-5 rounded-2xl flex justify-center active:bg-cyan-900 active:scale-95 border-b-4 border-slate-900 shadow-lg transition-transform text-cyan-500"><i class="ph-bold ph-caret-right text-2xl"></i></button>
             </div>
-            <p class="mt-6 text-slate-500 text-xs hidden lg:block uppercase tracking-widest font-bold bg-slate-900 px-4 py-2 rounded-full border border-slate-800 z-40 relative">Navegue pelas sombras. Aprenda com a falha.</p>
+            <p class="mt-6 text-slate-500 text-xs hidden lg:block uppercase tracking-widest font-bold bg-slate-900 px-4 py-2 rounded-full border border-slate-800 z-40 relative">Mantenha o foco. Antecipe os movimentos inimigos.</p>
         </div>
 
         <!-- BATALHA PADRÃO -->
@@ -933,20 +929,12 @@
                 row.forEach((cell, c) => {
                     const isPlayer = state.playerPos.r === r && state.playerPos.c === c;
                     
-                    // Fog of War Logic
-                    let distSq = Math.max(Math.abs(r - state.playerPos.r), Math.abs(c - state.playerPos.c)); // Chebyshev
-                    let fogClass = "fog-clear";
-                    if (!isBossFloor) {
-                        if (distSq > 4) fogClass = "fog-dark";
-                        else if (distSq > 2) fogClass = "fog-dim";
-                    }
-
                     const div = document.createElement('div');
-                    let cellClasses = `w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 flex items-center justify-center rounded-sm sm:rounded relative overflow-visible grid-cell-content ${fogClass} `;
+                    let cellClasses = `w-6 h-6 sm:w-8 sm:h-8 md:w-12 md:h-12 flex items-center justify-center rounded-sm sm:rounded relative overflow-visible grid-cell-content `;
                     let iconHTML = "";
 
                     if (isPlayer) {
-                        cellClasses += "bg-cyan-500/30 shadow-[inset_0_0_20px_rgba(0,255,255,0.6),0_0_15px_rgba(0,255,255,0.5)] z-20 border border-cyan-400 scale-105 fog-clear";
+                        cellClasses += "bg-cyan-500/30 shadow-[inset_0_0_20px_rgba(0,255,255,0.6),0_0_15px_rgba(0,255,255,0.5)] z-20 border border-cyan-400 scale-105";
                         iconHTML = `<i class="ph-fill ph-terminal-window text-cyan-300 text-lg md:text-2xl drop-shadow-[0_0_10px_rgba(0,255,255,1)]"></i>`;
                     } 
                     else if (cell === 1) { cellClasses += "bg-slate-800 border border-slate-700/80 shadow-inner z-0"; } 
@@ -967,15 +955,15 @@
                         iconHTML = `<i class="ph-fill ph-lightning text-blue-300 text-base md:text-2xl drop-shadow-[0_0_10px_rgba(59,130,246,1)]"></i>`;
                     }
                     else if (cell === 4) { 
-                        cellClasses += "bg-red-900/30 shadow-[inset_0_0_15px_rgba(239,68,68,0.3),0_0_10px_rgba(239,68,68,0.4)] z-10 border border-red-500/30 fog-clear";
+                        cellClasses += "bg-red-900/30 shadow-[inset_0_0_15px_rgba(239,68,68,0.3),0_0_10px_rgba(239,68,68,0.4)] z-10 border border-red-500/30";
                         iconHTML = `<i class="ph-fill ph-bug text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,1)] animate-bug text-base md:text-2xl"></i>`;
                     } 
                     else if (cell === 9) { 
-                        cellClasses += "bg-red-950/80 shadow-[inset_0_0_30px_rgba(239,68,68,0.8),0_0_30px_rgba(239,68,68,0.9)] z-20 border-2 border-red-500 fog-clear boss-cell";
+                        cellClasses += "bg-red-950/80 shadow-[inset_0_0_30px_rgba(239,68,68,0.8),0_0_30px_rgba(239,68,68,0.9)] z-20 border-2 border-red-500 boss-cell";
                         iconHTML = `<i class="ph-fill ph-skull text-red-500 drop-shadow-[0_0_20px_rgba(239,68,68,1)] animate-boss text-2xl md:text-4xl"></i>`;
                     }
                     else if (cell === 3) { 
-                        cellClasses += "bg-emerald-900/40 border border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)] z-10 fog-clear";
+                        cellClasses += "bg-emerald-900/40 border border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.5)] z-10";
                         iconHTML = `<i class="ph-fill ph-door-open text-emerald-300 drop-shadow-[0_0_15px_rgba(16,185,129,1)] text-base md:text-2xl"></i>`;
                     } 
                     else { cellClasses += "bg-slate-900/60 z-0"; }
