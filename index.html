@@ -267,80 +267,88 @@
         import { getAuth, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- CONTEÚDO EDUCACIONAL (Unidade 1) ---
+        // --- CONTEÚDO EDUCACIONAL EXPANDIDO (Unidade 1 - Anhanguera CS) ---
         const QUESTIONS_POOL = {
             level1: [ 
-                { q: "Qual é a definição exata de Sistema Operacional segundo o material?", options: [ { text: "Um hardware dedicado a traduzir linguagem de máquina.", isCorrect: false, exp: "Incorreto. É um software." }, { text: "Um conjunto de rotinas executado pelo processador que gerencia recursos de hardware e software.", isCorrect: true, exp: "Correto! (Slide 5). Controla o funcionamento do computador gerenciando CPU, memória e E/S." }, { text: "Um programa que funciona apenas como antivírus do hardware.", isCorrect: false, exp: "Falso." } ] },
-                { q: "No modelo de camadas, qual é a posição correta da comunicação?", options: [ { text: "Usuário -> Hardware -> Sistema Operacional -> Aplicação", isCorrect: false, exp: "Ordem errada." }, { text: "Usuários -> Aplicações -> Sistema Operacional -> Hardware", isCorrect: true, exp: "Exato! (Slide 10). O S.O. é a ponte entre as aplicações (que os usuários usam) e o hardware físico." } ] },
-                { q: "O que o S.O. faz quando atua como 'Máquina Estendida' (ou Virtual)?", options: [ { text: "Esconde a complexidade do hardware, oferecendo uma abstração mais simples para os programadores.", isCorrect: true, exp: "Correto! (Slide 23). Ele trata hardwares complexos como se fossem simples arquivos ou comandos." }, { text: "Ele cria múltiplas contas de usuário na mesma máquina física.", isCorrect: false, exp: "Isso é gerenciamento de usuários." } ] },
-                { q: "Qual é a característica do S.O. em relação ao ciclo de vida do computador?", options: [ { text: "É o último programa a ser fechado antes das aplicações.", isCorrect: false, exp: "Incorreto." }, { text: "É o primeiro programa a ser executado quando ligamos o computador e o último a ser encerrado.", isCorrect: true, exp: "Exato! (Slide 19)." } ] }
+                { q: "Qual é a definição exata de Sistema Operacional segundo o material?", options: [ { text: "Um hardware dedicado a traduzir linguagem de máquina.", isCorrect: false, exp: "Incorreto. É um software." }, { text: "Um conjunto de rotinas executado pelo processador que gerencia recursos de hardware e software.", isCorrect: true, exp: "Correto! Controla o funcionamento do computador gerenciando CPU, memória e dispositivos de Entrada/Saída." }, { text: "Um programa que funciona apenas como antivírus do hardware.", isCorrect: false, exp: "Falso. O SO é a base do sistema, não apenas um utilitário de segurança." } ] },
+                { q: "No modelo de camadas do sistema computacional, qual é a hierarquia correta de comunicação?", options: [ { text: "Usuário -> Hardware -> Sistema Operacional -> Aplicação", isCorrect: false, exp: "Ordem errada. O usuário não acede diretamente ao hardware." }, { text: "Usuários -> Aplicações -> Sistema Operacional -> Hardware", isCorrect: true, exp: "Exato! O S.O. é a ponte intermediária estrutural entre as aplicações de alto nível e o hardware físico subjacente." } ] },
+                { q: "O que significa dizer que o S.O. atua como uma 'Máquina Estendida' (ou Máquina Virtual)?", options: [ { text: "Oculta a complexidade física do hardware, oferecendo aos programadores uma abstração lógica, limpa e padronizada.", isCorrect: true, exp: "Correto! Ele trata hardwares complexos como abstrações simples (ex: enxerga um disco rígido complexo apenas como 'arquivos e pastas')." }, { text: "Ele emula diferentes sistemas operativos secundários simultaneamente.", isCorrect: false, exp: "Isso refere-se a software de virtualização (hypervisors), não à definição primordial de Máquina Estendida do SO." } ] },
+                { q: "Qual é a característica temporal do S.O. em relação ao ciclo de vida de uso do computador?", options: [ { text: "É o último programa a ser carregado na memória RAM após a interface gráfica.", isCorrect: false, exp: "Incorreto. Ele deve ser o primeiro." }, { text: "É o primeiro programa a ser executado no boot e o último a ser encerrado no shutdown.", isCorrect: true, exp: "Exato! O processo de boot (bootstrap) carrega o núcleo do SO para gerir todo o resto." } ] },
+                { q: "Além de ser uma Máquina Estendida, o Sistema Operacional também é classificado como um:", options: [ { text: "Gerenciador de Recursos (Resource Manager).", isCorrect: true, exp: "Correto! Ele atua como um árbitro, alocando CPU, memória e periféricos de forma justa e eficiente para programas concorrentes." }, { text: "Compilador de código-fonte.", isCorrect: false, exp: "Compiladores são ferramentas de desenvolvimento (software de sistema), mas não são o Sistema Operacional em si." } ] }
             ],
             level2: [ 
-                { q: "Qual o maior problema dos sistemas Monoprogramáveis (Monotarefa)?", options: [ { text: "Eles dividem o processador entre muitas tarefas, causando lentidão.", isCorrect: false, exp: "Isso refere-se à multitarefa (quando mal gerida)." }, { text: "Não há compartilhamento de recursos. Se um programa espera por dados, o processador fica totalmente ocioso.", isCorrect: true, exp: "Correto! (Slide 33). O MS-DOS é um exemplo clássico. Desperdiça poder de processamento." } ] },
-                { q: "Quais são as características de um Sistema de Processamento em Lote (Batch)?", options: [ { text: "Agrupa tarefas, armazena em fita ou disco, e não exige a interação do usuário.", isCorrect: true, exp: "Perfeito! (Slide 37). Muito usado em mainframes para otimizar o processador, executando tarefas sequencialmente sem pausas." }, { text: "Exige que o usuário interaja a cada 5 minutos para continuar.", isCorrect: false, exp: "No Batch, o usuário entrega o 'job' e volta horas depois." } ] },
-                { q: "Nos Sistemas Multiprogramáveis, o que significa 'Tempo Compartilhado'?", options: [ { text: "O tempo de garantia do processador é dividido entre vários donos.", isCorrect: false, exp: "Falso." }, { text: "O S.O. divide o tempo do processador em pequenas 'fatias', executando um pouco de cada programa tão rápido que parece simultâneo.", isCorrect: true, exp: "Correto! (Slide 38)." } ] }
+                { q: "Qual é a maior desvantagem arquitetural dos sistemas Monoprogramáveis (Monotarefa), como o MS-DOS?", options: [ { text: "Eles dividem o processador entre muitas tarefas, causando sobrecarga de preempção (overhead).", isCorrect: false, exp: "Isso é um desafio da multitarefa, não do monotarefa." }, { text: "Não há compartilhamento de recursos. Se um programa aguarda um dado (E/S), o processador fica totalmente ocioso.", isCorrect: true, exp: "Correto! Este modelo desperdiça poder computacional drásticamente, pois a CPU tem de esperar por periféricos lentos." } ] },
+                { q: "Quais são as características fundamentais de um Sistema de Processamento em Lote (Batch)?", options: [ { text: "Agrupa tarefas (jobs) semelhantes e executa-as sequencialmente sem exigir a interação do utilizador durante o processamento.", isCorrect: true, exp: "Perfeito! Muito usado na era dos mainframes para maximizar a utilização da CPU, sacrificando a interatividade." }, { text: "Exige que o utilizador valide cada instrução executada em tempo real.", isCorrect: false, exp: "No Batch, o processamento é offline/desacoplado do utilizador." } ] },
+                { q: "Nos Sistemas Multiprogramáveis, o conceito de 'Tempo Compartilhado' (Time-Sharing) refere-se a quê?", options: [ { text: "A CPU é dedicada a um único utilizador num horário agendado.", isCorrect: false, exp: "Isso seria agendamento humano, não arquitetura de SO." }, { text: "O S.O. fatia o tempo do processador (quantum) alternando rapidamente entre processos, criando a ilusão de execução simultânea.", isCorrect: true, exp: "Correto! É a base da interatividade moderna. O SO executa uma troca de contexto (context switch) a cada fatia de tempo." } ] },
+                { q: "Na transição para sistemas mais eficientes, o que é o 'Spooling' (Simultaneous Peripheral Operation On-Line)?", options: [ { text: "Uma técnica de utilizar memória secundária (disco) como um buffer temporário para tarefas de E/S (ex: fila de impressão), libertando a CPU.", isCorrect: true, exp: "Exatamente! Permite que a CPU não fique bloqueada a esperar por um dispositivo muito lento." }, { text: "Um tipo de vírus de boot antigo.", isCorrect: false, exp: "Spooling é uma técnica fundamental de otimização de SO." } ] },
+                { q: "Qual foi o salto tecnológico principal que viabilizou a Multiprogramação nas arquiteturas de hardware?", options: [ { text: "A invenção do Rato (Mouse).", isCorrect: false, exp: "O rato afetou a interface, mas não a gestão interna da CPU." }, { text: "A proteção de memória e o hardware de Interrupções (Interrupts).", isCorrect: true, exp: "Correto! Sem a capacidade de interromper um processo em execução e proteger a memória de outros programas, a CPU não poderia alternar tarefas com segurança." } ] }
             ],
             level3: [ 
-                { q: "Qual é a definição de um Sistema de Múltiplos Processadores 'Fortemente Acoplado'?", options: [ { text: "São processadores independentes ligados por uma rede de internet.", isCorrect: false, exp: "Estes são os Fracamente Acoplados (Distribuídos)." }, { text: "Vários processadores que compartilham a mesma memória física e o mesmo relógio.", isCorrect: true, exp: "Exato! (Slide 43). Exemplo: O seu PC multicore atual usando SMP." } ] },
-                { q: "Em relação ao Multiprocessamento Simétrico (SMP), marque a correta:", options: [ { text: "Há um processador Mestre e os outros são Escravos.", isCorrect: false, exp: "Esse é o modelo Assimétrico." }, { text: "Todos os processadores realizam as mesmas funções. O S.O. divide a carga entre eles de forma igualitária.", isCorrect: true, exp: "Correto! (Slide 44)." } ] },
-                { q: "O que são sistemas 'Fracamente Acoplados'?", options: [ { text: "Sistemas independentes com memória própria, interconectados em rede (ex: Sistemas Distribuídos).", isCorrect: true, exp: "Perfeito! (Slide 45). Se um falhar, o sistema como um todo pode sobreviver (tolerância a falhas)." }, { text: "Processadores soldados de forma fraca na placa-mãe.", isCorrect: false, exp: "Definição completamente errada." } ] }
+                { q: "Qual é a definição estrutural de um Sistema de Múltiplos Processadores 'Fortemente Acoplado'?", options: [ { text: "Processadores interconectados por uma rede WAN que não partilham o mesmo relógio.", isCorrect: false, exp: "Esta é a definição de fracamente acoplado (Sistemas Distribuídos)." }, { text: "Vários processadores que compartilham fisicamente a mesma memória principal (RAM) e o mesmo relógio (clock).", isCorrect: true, exp: "Exato! Exemplos clássicos são os processadores multicore dos PCs e smartphones modernos." } ] },
+                { q: "Em relação à topologia de Multiprocessamento Simétrico (SMP), marque a afirmação academicamente correta:", options: [ { text: "Existe um processador Mestre que gere o S.O., enquanto os outros (Escravos) apenas executam aplicações.", isCorrect: false, exp: "Isso descreve o modelo Assimétrico (Master/Slave)." }, { text: "Todos os processadores são iguais perante o S.O.; qualquer processador pode executar tanto código do utilizador quanto código do SO.", isCorrect: true, exp: "Correto! O SMP oferece melhor balanceamento de carga e evita gargalos centralizados." } ] },
+                { q: "O que define rigorosamente os Sistemas 'Fracamente Acoplados'?", options: [ { text: "Máquinas completas e independentes (nós), com RAM e S.O. próprios, que se comunicam através de uma infraestrutura de rede (ex: Clusters).", isCorrect: true, exp: "Perfeito! A principal vantagem é a altíssima tolerância a falhas e escalabilidade modular." }, { text: "Processadores que estão mal conectados no soquete da motherboard.", isCorrect: false, exp: "Trata-se de um conceito lógico de arquitetura, não de um defeito físico." } ] },
+                { q: "Num ambiente de rede gerido por um S.O. de Rede (NOS - Network OS), qual é o paradigma predominante?", options: [ { text: "O utilizador tem de estar ciente de que está a aceder a recursos num servidor remoto.", isCorrect: true, exp: "Correto! Ao contrário do SO Distribuído (que esconde a rede e finge ser um computador único), no SO de Rede a distinção entre local e remoto é explícita." }, { text: "Todos os computadores da rede fundem as suas memórias RAM numa única memória virtual partilhada.", isCorrect: false, exp: "Isso seria característico de uma arquitetura estritamente distribuída (DSM)." } ] }
             ],
             level4: [ 
-                { q: "No UNIX, a estrutura de um processo na memória é dividida em duas partes. Quais são?", options: [ { text: "Kernel central e Shell gráfico.", isCorrect: false, exp: "Isso é a estrutura geral do SO, não de um processo." }, { text: "Structure Process (residente na memória) e User Area (pode sofrer swap para o disco).", isCorrect: true, exp: "Correto! (Slide 78). A parte de estrutura nunca sai da memória para o S.O. não perder o processo de vista." } ] },
-                { q: "Qual foi a grande inovação arquitetural do Windows 2000 em relação à estabilidade?", options: [ { text: "Uso do Kernel Monolítico, colocando tudo no mesmo bloco de código.", isCorrect: false, exp: "O Windows 2000 evitou essa abordagem para melhorar a estabilidade e updates." }, { text: "Arquitetura baseada em Micronúcleo (Microkernel), onde cada funcionalidade é gerenciada isoladamente.", isCorrect: true, exp: "Exato! (Slide 92). Isso permitiu atualizar módulos (como drivers) sem reiniciar o sistema inteiro." } ] },
-                { q: "Segundo a Anhanguera, qual a diferença entre Software Livre e Open Source?", options: [ { text: "O Open Source obriga que tudo seja gratuito. O Software livre não.", isCorrect: false, exp: "Incorreto." }, { text: "Software Livre foca na liberdade total de redistribuição. O Open Source (código aberto) permite que o criador imponha restrições comerciais no uso/nome.", isCorrect: true, exp: "Correto! (Slide 95). Um exemplo de open source restrito é a marca Mozilla Firefox." } ] }
+                { q: "Na arquitetura tradicional do UNIX, a estrutura de um processo na memória é segmentada para eficiência. Quais são essas partes fundamentais?", options: [ { text: "Structure Process (sempre residente na memória) e User Area (que pode sofrer swap/paginação para o disco).", isCorrect: true, exp: "Correto! A estrutura base não pode sair da RAM para que o Kernel nunca perca o rastreio do processo, mesmo se a área de dados do utilizador for para o disco." }, { text: "Kernel Central e Interface Shell.", isCorrect: false, exp: "Esta é a divisão do SO como um todo, não da memória de um processo." } ] },
+                { q: "Qual inovação de arquitetura base o Windows NT / 2000 introduziu para aumentar a sua estabilidade comercial?", options: [ { text: "Transição para um design baseado em Micronúcleo (Microkernel) modificado, onde serviços e drivers rodam de forma mais isolada.", isCorrect: true, exp: "Exato! Apesar de ser um modelo híbrido na prática, a base microkernel reduziu a probabilidade de uma falha de driver derrubar todo o sistema." }, { text: "Adotou o Kernel Monolítico integral idêntico ao Linux original.", isCorrect: false, exp: "O Windows NT distanciou-se do modelo puramente monolítico para garantir modularidade." } ] },
+                { q: "Segundo os teóricos de Ciência da Computação (e a bibliografia da Anhanguera), qual é a nuance entre 'Software Livre' e 'Open Source'?", options: [ { text: "Open Source impede qualquer tipo de comercialização do software.", isCorrect: false, exp: "A licença Open Source permite frequentemente o uso e venda comercial." }, { text: "O Software Livre (Free Software) tem raízes filosóficas na liberdade incondicional do utilizador; o Open Source é focado na pragmática do desenvolvimento (código aberto), permitindo regras de licenciamento e restrições de marca comercial.", isCorrect: true, exp: "Correto! O movimento Open Source foca-se na eficiência da engenharia de software aberta, não apenas na ética de liberdade total." } ] },
+                { q: "O que motivou Linus Torvalds a criar o núcleo (kernel) Linux inicialmente?", options: [ { text: "O desejo de criar um monopólio para destruir a Microsoft nos anos 90.", isCorrect: false, exp: "Torvalds iniciou o projeto como um hobby estritamente pessoal e académico." }, { text: "A necessidade de possuir um sistema semelhante ao UNIX (inspirado no MINIX) que rodasse de forma nativa e livre nos processadores Intel 386.", isCorrect: true, exp: "Exato! Foi um projeto focado em arquitetura x86 e partilhado de forma aberta na Usenet." } ] }
             ],
             level5: [ 
-                { q: "O que é o 'Kernel' no contexto do S.O.?", options: [ { text: "É a parte central do S.O., o 'Coração', responsável pela gestão de processador, memória e estabilidade.", isCorrect: true, exp: "Exato! (Slide 101). Sem o Kernel, o S.O. não funciona." }, { text: "É o navegador nativo do S.O.", isCorrect: false, exp: "Falso." } ] },
-                { q: "Qual é a exata função dos 'Drivers de Dispositivos'?", options: [ { text: "Proteger o computador de vírus via USB.", isCorrect: false, exp: "Incorreto." }, { text: "Traduzir os comandos genéricos do S.O. em instruções específicas que um hardware particular entenda (ex: impressora, placa de vídeo).", isCorrect: true, exp: "Perfeito! (Slide 102). Sem eles, o S.O. não sabe como 'falar' com a placa física." } ] },
-                { q: "O que é o 'Shell'?", options: [ { text: "A interface (em modo texto ou gráfico) que permite a comunicação entre o usuário e o S.O.", isCorrect: true, exp: "Correto! É a 'concha' exterior." }, { text: "A placa-mãe do sistema.", isCorrect: false, exp: "Hardware, não software." } ] }
+                { q: "Defina estritamente o que é o 'Kernel' num Sistema Operacional moderno:", options: [ { text: "É o núcleo central privilegiado, responsável pela gestão dos processos, alocação de memória RAM e acesso direto ao hardware.", isCorrect: true, exp: "Exato! É o 'coração' da máquina. Se o Kernel entrar em pânico (Kernel Panic), o sistema operativo para completamente." }, { text: "É a camada gráfica (GUI) que desenha as janelas e os botões no ecrã.", isCorrect: false, exp: "A interface gráfica é uma camada de software (User Space), muito acima das permissões do Kernel." } ] },
+                { q: "Para que um programa comum consiga ler um ficheiro no disco rígido, ele não pode acessar o hardware diretamente. Qual é o mecanismo rigoroso que o S.O. exige?", options: [ { text: "A realização de uma System Call (Chamada de Sistema), provocando uma interrupção por software que transita o processador para o Modo Kernel temporariamente.", isCorrect: true, exp: "Perfeito! A System Call é a API segura do Kernel. O programa pede e o Kernel valida os privilégios antes de executar a ação." }, { text: "O programa tem de utilizar o browser nativo do sistema para fazer um download local.", isCorrect: false, exp: "Falso." } ] },
+                { q: "Qual é a distinção técnica principal entre os controladores (Drivers de Dispositivos)?", options: [ { text: "Traduzir instruções padronizadas do Kernel em sinais elétricos específicos e comandos proprietários que um hardware particular entenda.", isCorrect: true, exp: "Correto! O Kernel manda 'Ler Bloco X', e o driver sabe exatamente como movimentar a agulha ou enviar os sinais para o chip daquela marca específica." }, { text: "Eles atualizam o software antivírus do sistema operativo em segundo plano.", isCorrect: false, exp: "Incorreto. A sua função é estritamente comunicação de hardware." } ] },
+                { q: "O que representa o 'Modo Usuário' (User Mode) em contraste com o 'Modo Kernel' (Kernel Mode) nos processadores atuais?", options: [ { text: "No Modo Usuário, as instruções executadas têm restrições severas e não podem alterar a memória de outros programas nem comunicar com os periféricos diretamente.", isCorrect: true, exp: "Exato! Esta divisão de hardware é a base da segurança e estabilidade dos sistemas operativos modernos." }, { text: "Modo Usuário é apenas quando o ecrã está ligado, e o Modo Kernel é quando o PC entra em suspensão (sleep).", isCorrect: false, exp: "Falso. São modos de execução de instruções na CPU em microssegundos." } ] },
+                { q: "O que é o 'Shell' do Sistema Operacional e onde reside?", options: [ { text: "É a interface primária (linha de comandos ou gráfica) que recebe os comandos do humano. Ele opera em Modo Usuário.", isCorrect: true, exp: "Correto! O Shell interpreta as suas intenções e empacota-as em System Calls para o Kernel." }, { text: "É uma camada física colocada sobre o processador para evitar o superaquecimento.", isCorrect: false, exp: "Isso é dissipação térmica de hardware, não Shell." } ] }
             ]
         };
 
+        // --- MAPAS CORRIGIDOS PARA GARANTIR CONECTIVIDADE ---
         const BASE_LEVELS = [
             { name: 'Fundamentos', pool: 'level1', map: [
                 [1,1,1,1,1,1,1,1,1,1,1],
-                [1,2,0,5,1,0,5,0,0,5,1],
-                [1,1,0,1,1,4,1,1,1,0,1],
-                [1,5,0,0,4,0,0,6,1,0,1],
-                [1,1,1,1,1,0,1,1,1,0,1],
-                [1,5,0,0,0,0,0,5,4,0,1],
-                [1,1,1,1,1,1,1,1,3,1,1]
+                [1,2,0,0,0,1,5,0,0,5,1],
+                [1,1,1,1,0,1,0,1,1,0,1],
+                [1,5,0,0,0,4,0,0,1,0,1],
+                [1,0,1,1,1,1,1,0,1,0,1],
+                [1,0,0,5,0,0,4,0,0,3,1],
+                [1,1,1,1,1,1,1,1,1,1,1]
             ]},
             { name: 'Lote e Monotarefa', pool: 'level2', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1],
-                [1,2,0,0,1,5,0,0,4,5,1,1],
-                [1,1,1,0,1,1,1,0,1,1,1,1],
-                [1,5,4,0,0,6,1,0,0,0,5,1],
-                [1,0,1,1,1,0,1,1,1,1,0,1],
-                [1,0,0,5,1,0,4,0,0,3,0,1],
+                [1,2,0,1,5,0,0,4,5,0,3,1],
+                [1,0,0,1,0,1,1,1,1,1,0,1],
+                [1,0,1,1,0,0,0,6,1,5,0,1],
+                [1,0,0,4,1,1,1,0,1,0,1,1],
+                [1,5,0,0,0,0,0,0,0,0,0,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1]
             ]},
             { name: 'Multiprocessamento', pool: 'level3', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1,1],
-                [1,5,0,0,1,0,5,4,0,1,5,1,1],
-                [1,0,1,0,1,0,1,1,0,1,0,1,1],
-                [1,0,4,0,0,0,1,6,0,0,0,3,1],
-                [1,1,1,1,1,0,1,1,1,1,1,1,1],
-                [1,2,0,5,4,0,0,0,5,0,0,0,1],
+                [1,2,0,0,1,5,0,4,0,1,5,3,1],
+                [1,1,1,0,1,0,1,1,0,1,0,0,1],
+                [1,5,4,0,0,0,1,6,0,0,1,0,1],
+                [1,0,1,1,1,0,1,1,1,0,1,0,1],
+                [1,0,0,5,4,0,0,0,5,0,0,0,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1,1]
             ]},
             { name: 'UNIX & Win2000', pool: 'level4', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1,1],
-                [1,2,0,5,1,5,0,1,5,0,0,3,1],
-                [1,1,1,0,1,1,0,1,0,1,1,1,1],
-                [1,5,4,0,0,4,0,1,0,6,5,1,1],
-                [1,0,1,1,1,1,1,1,1,1,0,1,1],
-                [1,0,0,0,6,0,4,0,5,0,0,1,1],
+                [1,2,0,5,1,5,0,1,5,0,4,3,1],
+                [1,0,1,0,1,0,0,1,0,1,1,0,1],
+                [1,0,4,0,0,1,0,0,0,6,5,0,1],
+                [1,0,1,1,0,1,1,1,1,1,1,1,1],
+                [1,5,0,0,0,4,0,5,0,0,0,0,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1,1]
             ]},
             { name: 'O Núcleo (Kernel)', pool: 'level5', map: [
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                [1,2,0,0,1,5,0,4,0,1,5,0,0,3,1],
-                [1,1,1,0,1,0,1,1,0,1,1,1,1,0,1],
-                [1,5,4,0,1,0,6,1,0,4,0,5,1,0,1],
-                [1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],
-                [1,0,0,5,0,0,0,4,5,0,0,0,1,6,1],
+                [1,2,0,0,1,5,0,4,0,1,5,0,4,3,1],
+                [1,1,1,0,1,0,1,1,0,1,0,1,1,0,1],
+                [1,5,4,0,0,0,6,1,0,0,0,5,1,0,1],
+                [1,0,1,1,1,1,0,1,1,1,1,0,1,0,1],
+                [1,0,0,5,0,0,0,4,5,0,0,0,0,0,1],
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
             ]}
         ];
@@ -348,7 +356,7 @@
         // --- ESTADO GLOBAL ---
         const state = {
             user: null,
-            gameState: 'loading', // loading, auth, dashboard, playing, battle, game-over, level-complete
+            gameState: 'loading',
             progress: { xp: 0, maxFloor: 1 },
             currentFloor: 1,
             grid: [],
@@ -356,12 +364,13 @@
             hp: 100,
             combo: 0,
             activeBugCoords: null,
+            availableQuestionsForFloor: [], // CONTROLE DO BARALHO (SHUFFLE/POP)
             currentQuestion: null,
             selectedOption: null,
             isFeedbackMode: false
         };
 
-        window.bugInterval = null; // Gerenciador de IA dos Inimigos
+        window.bugInterval = null;
 
         // --- FIREBASE SETUP ---
         const userConfig = {
@@ -461,7 +470,6 @@
         // --- GAMEPLAY MECHANICS ---
         window.startLevel = () => {
             if(state.gameState === 'dashboard') {
-                // Ao iniciar do dashboard, começa do andar máximo gravado
                 state.currentFloor = state.progress.maxFloor || 1; 
                 state.hp = 100;
                 state.combo = 0;
@@ -470,10 +478,15 @@
             const levelIdx = (state.currentFloor - 1) % BASE_LEVELS.length;
             const baseLevel = BASE_LEVELS[levelIdx];
             
+            // Embaralhar o "deck" de questões do nível para não haver repetidas
+            const pool = [...QUESTIONS_POOL[baseLevel.pool]];
+            pool.sort(() => Math.random() - 0.5);
+            state.availableQuestionsForFloor = pool;
+
             // Deep copy map
             state.grid = baseLevel.map.map(row => [...row]);
 
-            // Dificuldade Escalonável Infinitamente (adiciona mais bugs a cada 5 andares)
+            // Dificuldade Escalonável Infinitamente
             let extraBugs = Math.floor((state.currentFloor - 1) / BASE_LEVELS.length) * 2;
             while(extraBugs > 0) {
                 let r = Math.floor(Math.random() * state.grid.length);
@@ -497,7 +510,6 @@
             state.gameState = 'playing';
             updateUI();
             
-            // Iniciar a Inteligência Artificial (Velocidade aumenta gradualmente mas com limite para não ficar frustrante)
             clearBugInterval();
             let aiSpeed = Math.max(650, 1100 - (state.currentFloor * 30));
             window.bugInterval = setInterval(moveBugs, aiSpeed);
@@ -540,22 +552,18 @@
                 let dr = state.playerPos.r - bug.r;
                 let dc = state.playerPos.c - bug.c;
 
-                // Move de forma gulosa (Greedy) em direção ao jogador
                 let possibleMoves = [];
                 if (Math.abs(dr) > 0) possibleMoves.push({ r: bug.r + Math.sign(dr), c: bug.c });
                 if (Math.abs(dc) > 0) possibleMoves.push({ r: bug.r, c: bug.c + Math.sign(dc) });
 
-                // Baralhar para evitar ficarem presos num canto (movimento rudimentar)
                 possibleMoves.sort(() => Math.random() - 0.5);
 
                 for (let move of possibleMoves) {
-                    // Colisão frontal com o jogador
                     if (move.r === state.playerPos.r && move.c === state.playerPos.c) {
                         triggerBattle(bug.r, bug.c);
                         triggeredBattleThisTick = true;
                         break;
                     }
-                    // Mover para célula vazia
                     if (state.grid[move.r][move.c] === 0) {
                         state.grid[bug.r][bug.c] = 0;
                         state.grid[move.r][move.c] = 4;
@@ -565,17 +573,22 @@
             });
 
             if (!triggeredBattleThisTick) {
-                renderGrid(); // Atualizar UI após os movimentos dos bugs
+                renderGrid(); 
             }
         }
 
         function triggerBattle(r, c) {
-            clearBugInterval(); // Pára os inimigos
+            clearBugInterval(); 
             state.activeBugCoords = { r, c };
             
-            const levelIdx = (state.currentFloor - 1) % BASE_LEVELS.length;
-            const pool = QUESTIONS_POOL[BASE_LEVELS[levelIdx].pool];
-            state.currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+            // Garantir que a lista de questões do piso atual tem dados (se esvaziar, re-embaralhamos)
+            if (!state.availableQuestionsForFloor || state.availableQuestionsForFloor.length === 0) {
+                const levelIdx = (state.currentFloor - 1) % BASE_LEVELS.length;
+                state.availableQuestionsForFloor = [...QUESTIONS_POOL[BASE_LEVELS[levelIdx].pool]].sort(() => Math.random() - 0.5);
+            }
+            
+            // Pop the top question
+            state.currentQuestion = state.availableQuestionsForFloor.pop();
             
             state.selectedOption = null;
             state.isFeedbackMode = false;
@@ -609,9 +622,9 @@
                 updateHUD();
                 state.playerPos = { r: newR, c: newC };
             }
-            else if (targetCell === 4) { // Colisão c/ Inimigo provocado pelo jogador
+            else if (targetCell === 4) { // Colisão c/ Inimigo
                 triggerBattle(newR, newC);
-                return; // Impede o render grid imediato
+                return; 
             } 
             else if (targetCell === 3) { // Saída
                 clearBugInterval();
@@ -646,7 +659,7 @@
                 state.playerPos = { r: state.activeBugCoords.r, c: state.activeBugCoords.c };
                 state.gameState = 'playing';
                 
-                // Retoma o movimento inimigo
+                // Retoma o movimento
                 let aiSpeed = Math.max(650, 1100 - (state.currentFloor * 30));
                 window.bugInterval = setInterval(moveBugs, aiSpeed);
             } else {
@@ -658,7 +671,6 @@
                     state.gameState = 'game-over';
                 } else {
                     state.gameState = 'playing';
-                    // Retoma o movimento inimigo, mas o bug não morre!
                     let aiSpeed = Math.max(650, 1100 - (state.currentFloor * 30));
                     window.bugInterval = setInterval(moveBugs, aiSpeed);
                 }
@@ -666,7 +678,6 @@
             updateUI();
         };
 
-        // Inputs Teclado
         window.addEventListener('keydown', (e) => {
             if (state.gameState !== 'playing') return;
             switch(e.key) {
@@ -695,7 +706,6 @@
                 onSnapshot(ref, (snap) => {
                     if (snap.exists()) {
                         state.progress = snap.data();
-                        // Migração caso seja dados antigos
                         if(!state.progress.maxFloor) state.progress.maxFloor = 1;
                     } else {
                         setDoc(ref, { xp: 0, maxFloor: 1 });
