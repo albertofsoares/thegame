@@ -1,867 +1,1383 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Anki FSRS + SM18 (Single File)</title>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistemas Operacionais — Estudo Guiado (Index único)</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#121a24; --panel2:#0f1620;
+      --text:#e7eef8; --muted:#a7b3c6; --line:#223142;
+      --accent:#6aa9ff; --good:#47d18c; --hard:#ffb020; --again:#ff5c7a; --easy:#7cdbff;
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{margin:0; background:radial-gradient(1200px 600px at 20% -10%, rgba(106,169,255,.25), transparent 60%),
+                      radial-gradient(900px 700px at 120% 10%, rgba(71,209,140,.14), transparent 60%),
+                      var(--bg);
+         color:var(--text); font-family:var(--sans);}
+    a{color:var(--accent); text-decoration:none}
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(10px);
+      background: rgba(11,15,20,.65);
+      border-bottom:1px solid rgba(34,49,66,.7);
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:14px 16px;}
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+    .brand{display:flex; gap:10px; align-items:center;}
+    .dot{width:10px; height:10px; border-radius:99px; background:var(--accent); box-shadow: 0 0 0 4px rgba(106,169,255,.18);}
+    .title{font-weight:800; letter-spacing:.2px}
+    .subtitle{color:var(--muted); font-size:13px}
+    nav{display:flex; gap:8px; flex-wrap:wrap; margin-left:auto}
+    .tab{
+      border:1px solid rgba(34,49,66,.85);
+      background:rgba(18,26,36,.75);
+      color:var(--text);
+      padding:8px 10px; border-radius:999px;
+      font-size:13px; cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
+    }
+    .tab:hover{transform:translateY(-1px); border-color:rgba(106,169,255,.65)}
+    .tab.active{background:rgba(106,169,255,.18); border-color:rgba(106,169,255,.75)}
+    main{max-width:1100px; margin:0 auto; padding:18px 16px 42px;}
+    .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:14px;}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} nav{margin-left:0} }
+    .card{
+      background:linear-gradient(180deg, rgba(18,26,36,.92), rgba(15,22,32,.92));
+      border:1px solid rgba(34,49,66,.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{padding:14px 14px 10px; border-bottom:1px solid rgba(34,49,66,.75)}
+    .card .hd h2{margin:0; font-size:16px}
+    .card .hd p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.35}
+    .card .bd{padding:14px}
+    .pill{display:inline-flex; gap:8px; align-items:center; border:1px solid rgba(34,49,66,.9);
+      background:rgba(18,26,36,.65); padding:8px 10px; border-radius:999px; font-size:13px; color:var(--muted)}
+    .kpi{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+    @media (max-width: 520px){ .kpi{grid-template-columns:1fr} }
+    .kpi .box{padding:12px; border-radius:14px; border:1px solid rgba(34,49,66,.85); background:rgba(18,26,36,.55)}
+    .kpi .box .n{font-weight:900; font-size:22px}
+    .kpi .box .l{color:var(--muted); font-size:12px; margin-top:4px}
+    .btnrow{display:flex; gap:10px; flex-wrap:wrap;}
+    button{
+      border:1px solid rgba(34,49,66,.9);
+      background:rgba(18,26,36,.78);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.12s ease;
+      font-size:14px;
+    }
+    button:hover{transform:translateY(-1px); border-color:rgba(106,169,255,.6)}
+    button.primary{background:rgba(106,169,255,.18); border-color:rgba(106,169,255,.72)}
+    button.danger{background:rgba(255,92,122,.14); border-color:rgba(255,92,122,.55)}
+    button.good{background:rgba(71,209,140,.14); border-color:rgba(71,209,140,.55)}
+    button.hard{background:rgba(255,176,32,.14); border-color:rgba(255,176,32,.55)}
+    button.easy{background:rgba(124,219,255,.12); border-color:rgba(124,219,255,.55)}
+    button.small{padding:8px 10px; border-radius:10px; font-size:13px}
+    .muted{color:var(--muted)}
+    .mono{font-family:var(--mono)}
+    .sep{height:1px; background:rgba(34,49,66,.75); margin:12px 0}
+    .focus{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      border:1px dashed rgba(34,49,66,.9); border-radius:14px; padding:10px 12px;
+      background:rgba(18,26,36,.35);
+    }
 
-    <style>
-      :root {
-        --bg: #0b0d10;
-        --panel: #12161c;
-        --panel2: #0f1318;
-        --text: #e9eef5;
-        --muted: #aab4c2;
-        --border: #222a35;
-        --danger: #ff5c6c;
-        --ok: #44d19d;
+    /* Flashcard UI */
+    .flashwrap{display:flex; flex-direction:column; gap:10px;}
+    .flashmeta{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+    .tags{display:flex; gap:6px; flex-wrap:wrap}
+    .tag{font-size:12px; color:var(--muted); border:1px solid rgba(34,49,66,.85); background:rgba(18,26,36,.5); padding:6px 8px; border-radius:999px}
+    .bigcard{
+      border:1px solid rgba(34,49,66,.9);
+      background:rgba(18,26,36,.55);
+      border-radius:18px;
+      padding:16px;
+      min-height:220px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .bigcard .q{font-size:18px; font-weight:800; line-height:1.25}
+    .bigcard .a{margin-top:14px; font-size:16px; line-height:1.35; color:var(--text)}
+    .bigcard .hint{margin-top:10px; color:var(--muted); font-size:13px}
+    .bigcard .corner{
+      position:absolute; right:-20px; top:-20px;
+      width:120px; height:120px; border-radius:30px;
+      background: radial-gradient(circle at 30% 30%, rgba(106,169,255,.35), transparent 55%),
+                  radial-gradient(circle at 70% 70%, rgba(71,209,140,.22), transparent 55%);
+      transform: rotate(25deg);
+      filter: blur(.2px);
+    }
+    .answerHidden .a, .answerHidden .hint{display:none}
+    .answerShown .hint{display:none}
+
+    /* Quiz */
+    .quizq{font-size:16px; font-weight:800; line-height:1.25}
+    .opt{display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:14px;
+      border:1px solid rgba(34,49,66,.85); background:rgba(18,26,36,.45); cursor:pointer; margin-top:10px}
+    .opt:hover{border-color:rgba(106,169,255,.55)}
+    .opt input{margin-top:3px}
+    .opt.correct{border-color:rgba(71,209,140,.65); background:rgba(71,209,140,.10)}
+    .opt.wrong{border-color:rgba(255,92,122,.65); background:rgba(255,92,122,.10)}
+    .callout{
+      border-left:4px solid rgba(106,169,255,.75);
+      background:rgba(106,169,255,.08);
+      padding:10px 12px;
+      border-radius:12px;
+      color:var(--text);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    textarea, input[type="text"], input[type="number"], select{
+      width:100%;
+      border:1px solid rgba(34,49,66,.85);
+      background:rgba(18,26,36,.45);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+    }
+    textarea{min-height:120px; font-family:var(--mono); font-size:13px}
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width: 720px){ .two{grid-template-columns:1fr} }
+    .footnote{font-size:12px; color:var(--muted); line-height:1.35}
+    .kbd{font-family:var(--mono); font-size:12px; padding:2px 6px; border-radius:8px; border:1px solid rgba(34,49,66,.85); background:rgba(18,26,36,.5); color:var(--muted)}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="row">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div class="title">Sistemas Operacionais — Estudo Guiado</div>
+          <div class="subtitle">Flashcards + Revisão espaçada + Simulado • tudo em um único <span class="mono">index.html</span></div>
+        </div>
+      </div>
+
+      <nav id="nav"></nav>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="app"></div>
+</main>
+
+<script>
+/* ============================
+   0) Utilidades
+============================ */
+const $ = (q, el=document) => el.querySelector(q);
+const $$ = (q, el=document) => [...el.querySelectorAll(q)];
+const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+const now = () => Date.now();
+const dayMs = 24*60*60*1000;
+
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+function fmtDate(t){
+  const d = new Date(t);
+  return d.toLocaleString(undefined, {year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"});
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ============================
+   1) Deck (Base)
+   - Você pode exportar/importar e expandir depois.
+============================ */
+const BUILTIN_DECK = {
+  meta: {
+    name: "Sistemas Operacionais — Prova (base)",
+    version: 1,
+    createdAt: now(),
+    notes: "Deck base alinhado aos slides de revisão e ao material principal."
+  },
+  cards: [
+    // Conceitos de SO
+    c("so_def_1", "O que é um Sistema Operacional (SO)?",
+      "É um software que gerencia recursos de hardware e software, garantindo execução correta e eficiente de programas e oferecendo interface entre usuário e computador.",
+      ["SO","conceito"]),
+    c("so_fun_1", "Quais são as 2 funções centrais do SO (visão do material)?",
+      "1) Facilitar o acesso aos recursos do sistema. 2) Organizar o compartilhamento de recursos garantindo proteção.",
+      ["SO","funções"]),
+    c("so_camadas_1", "Como funciona a ideia de camadas na comunicação do SO?",
+      "Usuário interage com aplicações → aplicações interagem com o SO → SO se comunica com o hardware/dispositivos.",
+      ["SO","camadas"]),
+    c("so_serv_1", "Liste serviços principais do SO (conforme material).",
+      "Carregar programa na memória e executar; sistema de arquivos (criar/ler/escrever/excluir); interface com periféricos; monitoração de recursos (gargalos); armazenar/manter estado do sistema.",
+      ["SO","serviços"]),
+
+    // Kernel e interpretador
+    c("kernel_1", "O que é o Kernel?",
+      "É o núcleo do sistema operacional, responsável por gerenciar recursos (processador/CPU, memória, sistema de arquivos e dispositivos de entrada/saída).",
+      ["Kernel","SO"]),
+    c("shell_1", "Qual o papel do interpretador de comandos?",
+      "Recebe comandos do usuário e realiza chamadas de sistema para que o Kernel execute as operações.",
+      ["Kernel","comandos"]),
+
+    // Tipos de SO
+    c("mono_1", "O que caracteriza um SO monoprogramável (monotarefa)?",
+      "Executa um único programa por vez, com recursos alocados exclusivamente para ele (mesmo que não use tudo). Ex.: MS-DOS.",
+      ["Tipos","monoprogramável"]),
+    c("multi_1", "O que caracteriza um SO multiprogramável (multitarefa)?",
+      "Divide recursos entre vários programas; alterna execução para que a CPU não fique ociosa, permitindo várias tarefas 'ao mesmo tempo'.",
+      ["Tipos","multiprogramável"]),
+    c("batch_1", "O que é um sistema Batch?",
+      "Processamento em lote (jobs), armazenado em fita/disco, sem exigir interação com o usuário; tende a ter tempo de resposta maior.",
+      ["Tipos","batch"]),
+    c("time_share_1", "O que é Tempo Compartilhado (time-sharing)?",
+      "Divide o processamento em fatias de tempo; se uma fatia não concluir, o SO interrompe e o processo aguarda nova fatia; permite interação por comandos.",
+      ["Tipos","tempo compartilhado"]),
+    c("real_time_1", "O que é sistema de Tempo Real (conforme material)?",
+      "Diferem do tempo compartilhado: não há conceito de fatia de tempo; o processador é usado pelo tempo necessário à execução da tarefa.",
+      ["Tipos","tempo real"]),
+
+    // Múltiplos processadores / acoplamento
+    c("mp_1", "O que são sistemas com múltiplos processadores?",
+      "Utilizam duas ou mais UCPs/CPUs trabalhando em conjunto; permitem executar vários programas simultaneamente e dividir processamento entre processadores.",
+      ["Multiprocessadores"]),
+    c("acopl_1", "Diferença: fortemente acoplados x fracamente acoplados",
+      "Fortemente: vários processadores compartilham uma memória física; E/S gerenciada por um único SO (multiprocessadores). Fracamente: sistemas interconectados em rede, cada um com seu SO e gerência própria.",
+      ["Multiprocessadores","acoplamento"]),
+    c("smp_1", "O que é SMP (fortemente acoplado)?",
+      "Processos/CPUs têm o mesmo tempo de acesso à memória principal pelos processadores.",
+      ["SMP","Multiprocessadores"]),
+    c("numa_1", "O que é NUMA (fortemente acoplado)?",
+      "Trabalha com conjunto de processos que compartilham processadores e memória; tempo de execução/acesso pode variar conforme o conjunto (não uniforme).",
+      ["NUMA","Multiprocessadores"]),
+    c("rede_dist_1", "Diferença: SO de rede (SOR) x Sistemas Distribuídos",
+      "SOR: permite que servidor compartilhe recursos com outros computadores/dispositivos. Distribuídos: tratam sistemas interligados como se fossem um único sistema.",
+      ["Rede","Distribuídos"]),
+
+    // Processos (definição detalhada do slide de revisão)
+    c("proc_def_1", "O que é um processo (definição completa da revisão)?",
+      "Um processo pode ser definido como um programa em execução incluindo valores do contador de programa atual, registradores e variáveis; também pode ser visto como instância de um programa em execução (incluindo variáveis).",
+      ["Processos","conceito"]),
+    c("proc_states_1", "Quais estados de processo a revisão/material destaca?",
+      "Em execução, Pronto, Bloqueado (espera).",
+      ["Processos","estados"]),
+    c("proc_block_1", "O que significa processo Bloqueado (espera)?",
+      "Está aguardando evento externo (ex.: usuário) ou recurso/dispositivo de E/S para continuar.",
+      ["Processos","estados"]),
+    c("proc_ready_1", "O que significa processo Pronto?",
+      "Está apto a executar, aguardando a CPU/escala; o SO decide a ordem/tempo de uso.",
+      ["Processos","estados"]),
+
+    // Threads
+    c("thread_1", "O que é uma thread?",
+      "Unidade básica de execução; um 'processo leve' (subprocesso) dentro de um processo maior; permite execução concorrente e compartilhamento de recursos no mesmo espaço de memória.",
+      ["Threads","conceito"]),
+    c("thread_vs_proc_1", "Por que threads são mais leves que processos?",
+      "Porque threads do mesmo processo compartilham recursos e espaço de memória, tornando criação/gerência mais eficiente.",
+      ["Threads","processos"]),
+
+    // Sistema de arquivos / caminhos
+    c("fs_path_1", "Diferença: caminho absoluto x relativo",
+      "Absoluto: do diretório-raiz até o arquivo, único (Windows usa \\ e Unix usa /). Relativo: depende do diretório atual/de trabalho.",
+      ["Arquivos","caminhos"]),
+    c("fs_workdir_1", "O que Tanenbaum destaca sobre diretório de trabalho por processo?",
+      "Cada processo possui seu próprio diretório de trabalho; mudanças não afetam outros processos nem deixam vestígios no sistema de arquivos.",
+      ["Arquivos","processos"]),
+
+    // Memória / multiprogramação
+    c("share_time_space_1", "Compartilhamento no tempo x no espaço",
+      "Tempo: programas aguardam sua vez; SO decide quem usa e por quanto. Espaço: vários programas usam partes do recurso simultaneamente (ex.: memória dividida).",
+      ["Recursos","compartilhamento"]),
+    c("mem_virtual_1", "O que é memória virtual (ideia central)?",
+      "Permite que programa (código/dados/pilha) ultrapasse a memória física, mantendo partes ativas na RAM e o restante no disco; costuma ser arquivo dinâmico.",
+      ["Memória","virtual"]),
+    c("vm_paging_1", "Como a paginação aparece no conceito de memória virtual?",
+      "Cada processo tem espaço de endereçamento virtual maior que a memória física; dividido em páginas/segmentos; SO mantém tabelas mapeando virtual ↔ físico/disco.",
+      ["Memória","paginação"]),
+
+    // Máquina virtual
+    c("vm_1", "Máquina virtual: o que é e para que serve?",
+      "Um nível intermediário entre SO e hardware que permite rodar um SO dentro de outro, isolando ambientes e aumentando compatibilidade/segurança.",
+      ["Máquina virtual"]),
+    c("vm_virus_1", "Máquina virtual é imune a vírus?",
+      "Não. Ela pode ser infectada; em geral, o problema fica no ambiente virtual e não compromete diretamente o hardware (depende das configurações).",
+      ["Máquina virtual","segurança"]),
+    c("vm_drivers_1", "Problema comum em VM: teclado/mouse não funcionar. Por quê?",
+      "Falta de drivers/integração entre máquina virtual e máquina real; pode exigir reinstalar/instalar drivers manualmente (ou reiniciar a VM).",
+      ["Máquina virtual","drivers"]),
+
+    // Controle de acesso (caso da empresa)
+    c("access_1", "Por que usuários conseguiram apagar arquivos importantes de outros setores?",
+      "Porque tinham acesso como administrador. A solução é controle de acesso/permissões (ex.: outros setores apenas leitura) e backup.",
+      ["Segurança","arquivos"])
+  ]
+};
+
+function c(id, front, back, tags=[], extra={}){
+  return {
+    id,
+    front,
+    back,
+    tags,
+    prereq: extra.prereq ?? [],
+    source: extra.source ?? "",
+  };
+}
+
+/* ============================
+   2) Persistência (localStorage)
+============================ */
+const LS_KEY = "so_study_guided_v1";
+
+function loadState(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw){
+    return initStateFromBuiltin();
+  }
+  try{
+    const st = JSON.parse(raw);
+    // Migração simples: se não tiver deck, recria
+    if(!st.deck || !st.deck.cards) return initStateFromBuiltin();
+    return st;
+  }catch{
+    return initStateFromBuiltin();
+  }
+}
+
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+function initStateFromBuiltin(){
+  const st = {
+    deck: structuredClone(BUILTIN_DECK),
+    // SM-2 simplificado por card
+    srs: {}, // {cardId: {ease, intervalDays, reps, due, lapses, lastGrade}}
+    stats: {
+      createdAt: now(),
+      totalReviews: 0,
+      totalCorrect: 0,
+      totalWrong: 0,
+      quizRuns: 0,
+      quizBest: 0,
+      streak: 0,
+      lastReviewAt: 0,
+    },
+    settings: {
+      focusMode: true,
+      showHints: false,
+      dailyGoal: 25,
+      quizCount: 10,
+      quizFrom: "dueFirst", // dueFirst | random
+    },
+    session: {
+      currentCardId: null,
+      cardSide: "front", // front|back
+      lastQuiz: null
+    }
+  };
+
+  // Inicializa SRS de cada card
+  for(const card of st.deck.cards){
+    st.srs[card.id] = {
+      ease: 2.3,          // fator de facilidade
+      intervalDays: 0,    // intervalo atual em dias
+      reps: 0,            // repetições corretas seguidas
+      due: now(),         // pronto agora
+      lapses: 0,
+      lastGrade: null
+    };
+  }
+  return st;
+}
+
+let state = loadState();
+
+/* ============================
+   3) SRS (SM-2 simplificado)
+   Botões: Again(0), Hard(3), Good(4), Easy(5)
+============================ */
+function gradeToLabel(g){
+  if(g===0) return "Errei";
+  if(g===3) return "Difícil";
+  if(g===4) return "Bom";
+  if(g===5) return "Fácil";
+  return "";
+}
+
+function applyGrade(cardId, grade){
+  const s = state.srs[cardId];
+  const prevDue = s.due;
+
+  // Atualiza ease (SM-2 simplificado)
+  // EF' = EF + (0.1 - (5-q)*(0.08 + (5-q)*0.02))
+  const q = grade===0 ? 0 : grade; // 0/3/4/5
+  const ef = s.ease;
+  const ef2 = clamp(ef + (0.1 - (5-q)*(0.08 + (5-q)*0.02)), 1.3, 2.7);
+
+  if(grade === 0){
+    s.reps = 0;
+    s.intervalDays = 0;
+    s.lapses += 1;
+    s.due = now() + 10*60*1000; // 10 minutos (rever na sessão)
+    state.stats.totalWrong += 1;
+    state.stats.streak = 0;
+  }else{
+    s.reps += 1;
+
+    if(s.reps === 1) s.intervalDays = 1;
+    else if(s.reps === 2) s.intervalDays = 3;
+    else{
+      // Hard encurta um pouco
+      const mult = grade===3 ? 1.2 : grade===4 ? 1.7 : 2.2;
+      s.intervalDays = Math.round(Math.max(1, s.intervalDays * mult * ef2));
+    }
+
+    // Ajuste: hard reduz EF levemente; easy aumenta um pouco
+    if(grade===3) s.ease = clamp(ef2 - 0.05, 1.3, 2.7);
+    else if(grade===5) s.ease = clamp(ef2 + 0.05, 1.3, 2.7);
+    else s.ease = ef2;
+
+    s.due = now() + s.intervalDays * dayMs;
+
+    state.stats.totalCorrect += 1;
+    state.stats.streak += 1;
+  }
+
+  s.lastGrade = grade;
+
+  state.stats.totalReviews += 1;
+  state.stats.lastReviewAt = now();
+
+  saveState();
+}
+
+/* ============================
+   4) Seleção de cards
+============================ */
+function getDeckCards(){
+  return state.deck.cards;
+}
+
+function dueCards(){
+  const t = now();
+  return getDeckCards().filter(c => (state.srs[c.id]?.due ?? t) <= t);
+}
+
+function upcomingCards(limit=8){
+  const cards = getDeckCards()
+    .map(c => ({c, due: state.srs[c.id].due}))
+    .sort((a,b)=>a.due-b.due)
+    .slice(0, limit);
+  return cards;
+}
+
+function pickNextCard(){
+  const d = dueCards();
+  if(d.length === 0){
+    // pega o próximo mais próximo
+    const up = upcomingCards(1)[0];
+    return up ? up.c : getDeckCards()[0];
+  }
+  // prioriza cards vencidos há mais tempo + lapses
+  const scored = d.map(c=>{
+    const s = state.srs[c.id];
+    const overdue = Math.max(0, now() - s.due);
+    const score = overdue + s.lapses*2*60*60*1000; // lapses pesa
+    return {c, score};
+  }).sort((a,b)=>b.score-a.score);
+
+  return scored[0].c;
+}
+
+function setCurrentCard(card){
+  state.session.currentCardId = card.id;
+  state.session.cardSide = "front";
+  saveState();
+}
+
+function getCurrentCard(){
+  const id = state.session.currentCardId;
+  const card = getDeckCards().find(c=>c.id===id);
+  if(card) return card;
+  const next = pickNextCard();
+  setCurrentCard(next);
+  return next;
+}
+
+/* ============================
+   5) Quiz (simulado)
+============================ */
+function buildQuiz(count){
+  const cards = getDeckCards();
+  const dueFirst = dueCards();
+  const pool = (state.settings.quizFrom==="dueFirst" && dueFirst.length>=count)
+    ? shuffle(dueFirst).slice(0, count)
+    : shuffle(cards).slice(0, count);
+
+  // criar questões a partir de cards (frente = enunciado; correta = back)
+  const questions = pool.map((card, idx)=>{
+    const others = shuffle(cards.filter(c=>c.id!==card.id)).slice(0, 3);
+    const opts = shuffle([
+      {text: card.back, correct: true},
+      ...others.map(o=>({text:o.back, correct:false}))
+    ]);
+    return {
+      id: "q_" + idx + "_" + card.id,
+      prompt: card.front,
+      options: opts,
+      answerIdx: opts.findIndex(o=>o.correct),
+      chosenIdx: null,
+      cardId: card.id,
+      explain: card.back
+    };
+  });
+
+  return {
+    createdAt: now(),
+    count,
+    idx: 0,
+    questions,
+    done: false,
+    score: 0
+  };
+}
+
+function startQuiz(){
+  state.session.lastQuiz = buildQuiz(state.settings.quizCount);
+  saveState();
+}
+
+function answerQuiz(qIdx, optIdx){
+  const quiz = state.session.lastQuiz;
+  if(!quiz || quiz.done) return;
+
+  const q = quiz.questions[qIdx];
+  if(q.chosenIdx != null) return;
+
+  q.chosenIdx = optIdx;
+  const correct = (optIdx === q.answerIdx);
+  if(correct) quiz.score += 1;
+
+  // se errou, marca card como "again" cedo
+  if(!correct){
+    const s = state.srs[q.cardId];
+    s.due = Math.min(s.due, now() + 15*60*1000);
+    s.lapses += 1;
+    state.stats.totalWrong += 1;
+    state.stats.streak = 0;
+  }else{
+    state.stats.totalCorrect += 1;
+    state.stats.streak += 1;
+  }
+
+  state.stats.quizRuns += 1; // conta respostas
+  saveState();
+}
+
+function finishQuiz(){
+  const quiz = state.session.lastQuiz;
+  if(!quiz) return;
+  quiz.done = true;
+
+  const pct = Math.round((quiz.score/quiz.count)*100);
+  state.stats.quizBest = Math.max(state.stats.quizBest, pct);
+
+  saveState();
+}
+
+/* ============================
+   6) UI / Rotas
+============================ */
+const routes = [
+  {id:"dashboard", label:"Painel"},
+  {id:"cards", label:"Flashcards"},
+  {id:"quiz", label:"Simulado"},
+  {id:"deck", label:"Deck"},
+  {id:"settings", label:"Config"}
+];
+
+function setRoute(id){
+  location.hash = "#" + id;
+}
+
+function getRoute(){
+  const h = (location.hash || "#dashboard").slice(1);
+  return routes.some(r=>r.id===h) ? h : "dashboard";
+}
+
+function renderNav(){
+  const nav = $("#nav");
+  const r = getRoute();
+  nav.innerHTML = routes.map(rt=>{
+    return `<div class="tab ${rt.id===r?'active':''}" data-route="${rt.id}">${rt.label}</div>`;
+  }).join("");
+  $$(".tab", nav).forEach(t=>{
+    t.addEventListener("click", ()=>setRoute(t.dataset.route));
+  });
+}
+
+function render(){
+  renderNav();
+  const r = getRoute();
+  const app = $("#app");
+  if(r==="dashboard") app.innerHTML = viewDashboard();
+  if(r==="cards") app.innerHTML = viewCards();
+  if(r==="quiz") app.innerHTML = viewQuiz();
+  if(r==="deck") app.innerHTML = viewDeck();
+  if(r==="settings") app.innerHTML = viewSettings();
+
+  bindCommon();
+  if(r==="cards") bindCards();
+  if(r==="quiz") bindQuiz();
+  if(r==="deck") bindDeck();
+  if(r==="settings") bindSettings();
+}
+
+window.addEventListener("hashchange", render);
+
+/* ============================
+   7) Views
+============================ */
+function viewDashboard(){
+  const total = getDeckCards().length;
+  const due = dueCards().length;
+  const nextUp = upcomingCards(6);
+  const reviewed = state.stats.totalReviews;
+  const correct = state.stats.totalCorrect;
+  const wrong = state.stats.totalWrong;
+  const acc = (correct+wrong) ? Math.round((correct/(correct+wrong))*100) : 0;
+
+  const goal = state.settings.dailyGoal;
+  const todayKey = new Date().toISOString().slice(0,10);
+  const dailyCount = getDailyCount(todayKey);
+
+  return `
+  <div class="grid">
+    <div class="card">
+      <div class="hd">
+        <h2>Seu painel (pré-prova)</h2>
+        <p>Foco: poucos passos, alta retenção. Faça o que está <b>vencido</b> primeiro.</p>
+      </div>
+      <div class="bd">
+        <div class="kpi">
+          <div class="box">
+            <div class="n">${due}</div>
+            <div class="l">Cards vencidos (para revisar agora)</div>
+          </div>
+          <div class="box">
+            <div class="n">${acc}%</div>
+            <div class="l">Acurácia geral (cards + simulado)</div>
+          </div>
+          <div class="box">
+            <div class="n">${dailyCount}/${goal}</div>
+            <div class="l">Meta de hoje (reviews feitos)</div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="focus">
+          <div>
+            <div style="font-weight:800">Modo foco</div>
+            <div class="muted" style="font-size:13px">1 item por vez. Sem rolagem excessiva.</div>
+          </div>
+          <div class="btnrow">
+            <button class="primary" id="goCards">Revisar cards vencidos</button>
+            <button id="goQuiz">Fazer simulado</button>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="callout">
+          <b>Atalhos</b>: <span class="kbd">Espaço</span> mostrar/ocultar resposta •
+          <span class="kbd">1</span> Errei • <span class="kbd">2</span> Difícil • <span class="kbd">3</span> Bom • <span class="kbd">4</span> Fácil
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>Próximos cards</h2>
+        <p>Ordem por “vence primeiro”.</p>
+      </div>
+      <div class="bd">
+        ${nextUp.map(x=>{
+          const s = state.srs[x.c.id];
+          const dueTxt = s.due<=now() ? "<b style='color:var(--again)'>agora</b>" : `<span class="muted">${fmtDate(s.due)}</span>`;
+          return `
+            <div style="padding:10px 10px; border:1px solid rgba(34,49,66,.8); border-radius:14px; background:rgba(18,26,36,.35); margin-bottom:10px">
+              <div style="font-weight:800">${escapeHtml(x.c.front)}</div>
+              <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:6px">
+                <div class="muted" style="font-size:12px">Tags: ${(x.c.tags||[]).slice(0,5).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join(" ")}</div>
+                <div style="font-size:12px">Vence: ${dueTxt}</div>
+              </div>
+            </div>
+          `;
+        }).join("")}
+        <div class="footnote">Tudo salva automaticamente no seu navegador (localStorage).</div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function viewCards(){
+  const card = getCurrentCard();
+  const s = state.srs[card.id];
+  const side = state.session.cardSide;
+  const due = dueCards().length;
+  const total = getDeckCards().length;
+
+  const cls = (side==="front") ? "answerHidden" : "answerShown";
+
+  return `
+  <div class="grid">
+    <div class="card">
+      <div class="hd">
+        <h2>Flashcards (revisão espaçada)</h2>
+        <p>Revisar até bater sua meta. Depois, simulado.</p>
+      </div>
+      <div class="bd">
+        <div class="flashwrap">
+          <div class="flashmeta">
+            <div class="pill">Vencidos agora: <b style="margin-left:8px">${due}</b> <span class="muted" style="margin-left:8px">/ ${total}</span></div>
+            <div class="pill">Intervalo atual: <b style="margin-left:8px">${s.intervalDays}d</b> <span class="muted" style="margin-left:8px">EF ${s.ease.toFixed(2)}</span></div>
+          </div>
+
+          <div class="bigcard ${cls}" id="bigcard">
+            <div class="corner"></div>
+            <div class="q">${escapeHtml(card.front)}</div>
+            <div class="a">${escapeHtml(card.back).replaceAll("\\n","<br>")}</div>
+            <div class="hint muted">Dica: tente responder em voz alta antes de revelar.</div>
+          </div>
+
+          <div class="tags">
+            ${(card.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}
+          </div>
+
+          <div class="btnrow">
+            <button class="primary" id="toggleAnswer">${side==="front"?"Mostrar resposta":"Ocultar resposta"} <span class="kbd" style="margin-left:8px">Espaço</span></button>
+            <button id="nextCard" class="small">Pular (sem pontuar)</button>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="btnrow">
+            <button class="danger" id="g0">Errei <span class="kbd" style="margin-left:8px">1</span></button>
+            <button class="hard" id="g3">Difícil <span class="kbd" style="margin-left:8px">2</span></button>
+            <button class="good" id="g4">Bom <span class="kbd" style="margin-left:8px">3</span></button>
+            <button class="easy" id="g5">Fácil <span class="kbd" style="margin-left:8px">4</span></button>
+          </div>
+
+          <div class="footnote">
+            Regra: só pontue depois de ver a resposta. Se estiver cansado, use “Pular”.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>Meta e foco</h2>
+        <p>Configurações rápidas para sua memória e atenção.</p>
+      </div>
+      <div class="bd">
+        <div class="two">
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Meta diária (reviews)</div>
+            <input type="number" id="dailyGoal" min="5" max="200" value="${state.settings.dailyGoal}" />
+          </div>
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Simulado (nº questões)</div>
+            <input type="number" id="quizCount" min="5" max="50" value="${state.settings.quizCount}" />
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="callout">
+          <b>Recomendação pré-prova:</b> faça 25–40 reviews hoje e um simulado de 10–15 questões.
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="btnrow">
+          <button id="goQuiz2">Ir para simulado</button>
+          <button id="resetSession" class="danger">Resetar sessão (não apaga progresso)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function viewQuiz(){
+  const quiz = state.session.lastQuiz;
+  const hasQuiz = !!quiz;
+  let body = "";
+
+  if(!hasQuiz){
+    body = `
+      <div class="callout">
+        Clique em <b>Iniciar simulado</b>. As perguntas são geradas a partir do seu deck (frente = enunciado, verso = resposta).
+      </div>
+    `;
+  }else{
+    const q = quiz.questions[quiz.idx];
+    const pct = Math.round((quiz.score/quiz.count)*100);
+
+    body = `
+      <div class="pill">Questão <b style="margin-left:8px">${quiz.idx+1}</b> <span class="muted">/ ${quiz.count}</span></div>
+      <div class="sep"></div>
+      <div class="quizq">${escapeHtml(q.prompt)}</div>
+
+      ${q.options.map((o,i)=>{
+        const chosen = (q.chosenIdx===i);
+        const correct = (q.answerIdx===i);
+        const cls = q.chosenIdx==null ? "" : (correct ? "correct" : (chosen ? "wrong" : ""));
+        return `
+          <label class="opt ${cls}">
+            <input type="radio" name="opt" ${q.chosenIdx!=null?'disabled':''} ${chosen?'checked':''} data-opt="${i}" />
+            <div>
+              <div style="font-weight:700">${escapeHtml(o.text)}</div>
+            </div>
+          </label>
+        `;
+      }).join("")}
+
+      <div class="sep"></div>
+
+      ${q.chosenIdx==null ? `
+        <div class="btnrow">
+          <button class="primary" id="confirmQuiz">Confirmar resposta</button>
+          <button id="skipQuiz">Pular</button>
+        </div>
+      ` : `
+        <div class="callout">
+          <b>${q.chosenIdx===q.answerIdx ? "Correto ✅" : "Incorreto ❌"}</b><br>
+          Resposta esperada: <span class="mono">${escapeHtml(q.explain)}</span>
+        </div>
+        <div class="btnrow">
+          <button class="primary" id="nextQuiz">${quiz.idx < quiz.count-1 ? "Próxima questão" : "Finalizar simulado"}</button>
+        </div>
+      `}
+
+      <div class="sep"></div>
+      <div class="muted" style="font-size:13px">Score: <b>${quiz.score}</b> / ${quiz.count} (${pct}%)</div>
+    `;
+
+    if(quiz.done){
+      const pct2 = Math.round((quiz.score/quiz.count)*100);
+      body = `
+        <div class="callout">
+          <b>Simulado finalizado.</b><br>
+          Resultado: <b>${quiz.score}</b> / ${quiz.count} = <b>${pct2}%</b><br>
+          Melhor histórico: <b>${state.stats.quizBest}%</b>
+        </div>
+        <div class="btnrow">
+          <button class="primary" id="newQuiz">Novo simulado</button>
+          <button id="goCards3">Voltar aos flashcards</button>
+        </div>
+      `;
+    }
+  }
+
+  return `
+  <div class="grid">
+    <div class="card">
+      <div class="hd">
+        <h2>Simulado</h2>
+        <p>Treino de prova: objetivo e com correção na hora.</p>
+      </div>
+      <div class="bd">
+        <div class="btnrow" style="margin-bottom:12px">
+          <button class="primary" id="startQuiz">${hasQuiz && !quiz?.done ? "Reiniciar simulado" : "Iniciar simulado"}</button>
+          <button id="quizSettings">Config rápida</button>
+        </div>
+        ${body}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>Config rápida do simulado</h2>
+        <p>Para pré-prova, recomendo 10–15 questões.</p>
+      </div>
+      <div class="bd">
+        <div class="two">
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Quantidade</div>
+            <input type="number" id="quizCount2" min="5" max="50" value="${state.settings.quizCount}">
+          </div>
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Escolher questões</div>
+            <select id="quizFrom">
+              <option value="dueFirst" ${state.settings.quizFrom==="dueFirst"?"selected":""}>Priorizar vencidas</option>
+              <option value="random" ${state.settings.quizFrom==="random"?"selected":""}>Aleatório do deck</option>
+            </select>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="btnrow">
+          <button class="good" id="saveQuizCfg">Salvar</button>
+          <button class="danger" id="clearQuiz">Limpar simulado atual</button>
+        </div>
+
+        <div class="sep"></div>
+        <div class="footnote">
+          Dica: se errar no simulado, o card volta a “vencer” mais cedo para reforço.
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function viewDeck(){
+  const cards = getDeckCards();
+  const tagMap = new Map();
+  for(const c of cards){
+    for(const t of (c.tags||[])){
+      tagMap.set(t, (tagMap.get(t)||0)+1);
+    }
+  }
+  const tags = [...tagMap.entries()].sort((a,b)=>b[1]-a[1]);
+
+  return `
+  <div class="grid">
+    <div class="card">
+      <div class="hd">
+        <h2>Deck</h2>
+        <p>Você pode exportar/importar para crescer o material. Tudo fica no navegador.</p>
+      </div>
+      <div class="bd">
+        <div class="pill">Cards no deck: <b style="margin-left:8px">${cards.length}</b></div>
+        <div class="sep"></div>
+
+        <div class="two">
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Exportar deck (JSON)</div>
+            <button class="primary" id="exportDeck">Baixar JSON</button>
+          </div>
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Importar deck (JSON)</div>
+            <input type="text" id="importHint" placeholder="Cole o JSON no campo abaixo e clique Importar" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          <textarea id="importArea" placeholder='Cole aqui um JSON no formato { "meta": {...}, "cards": [...] }'></textarea>
+          <div class="btnrow" style="margin-top:10px">
+            <button class="good" id="importDeck">Importar (substitui deck atual)</button>
+            <button class="danger" id="resetAll">Reset total (apaga progresso)</button>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="callout">
+          <b>Como expandir:</b> você pode importar um deck maior que eu gere depois com base no seu PDF MASTER.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>Tags mais frequentes</h2>
+        <p>Útil para ver o que está mais coberto no deck.</p>
+      </div>
+      <div class="bd">
+        ${tags.slice(0,18).map(([t,n])=>`
+          <div style="display:flex; justify-content:space-between; gap:10px; padding:10px; border:1px solid rgba(34,49,66,.8); border-radius:14px; background:rgba(18,26,36,.35); margin-bottom:10px">
+            <div style="font-weight:800">${escapeHtml(t)}</div>
+            <div class="muted">${n}</div>
+          </div>
+        `).join("")}
+        <div class="footnote">Você pode filtrar por tag em versões futuras — se quiser eu adiciono.</div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function viewSettings(){
+  const st = state.stats;
+  const acc = (st.totalCorrect+st.totalWrong) ? Math.round((st.totalCorrect/(st.totalCorrect+st.totalWrong))*100) : 0;
+
+  return `
+  <div class="grid">
+    <div class="card">
+      <div class="hd">
+        <h2>Configurações</h2>
+        <p>Ajustes para foco e rotina pré-prova.</p>
+      </div>
+      <div class="bd">
+        <div class="two">
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Modo foco (recomendado)</div>
+            <select id="focusMode">
+              <option value="true" ${state.settings.focusMode?"selected":""}>Ativado</option>
+              <option value="false" ${!state.settings.focusMode?"selected":""}>Desativado</option>
+            </select>
+          </div>
+          <div>
+            <div class="muted" style="font-size:12px; margin-bottom:6px">Mostrar dicas no card</div>
+            <select id="showHints">
+              <option value="false" ${!state.settings.showHints?"selected":""}>Não</option>
+              <option value="true" ${state.settings.showHints?"selected":""}>Sim</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="btnrow">
+          <button class="good" id="saveSettings">Salvar configurações</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="callout">
+          <b>Status:</b> Reviews: <b>${st.totalReviews}</b> • Acurácia: <b>${acc}%</b> • Streak: <b>${st.streak}</b><br>
+          Última atividade: <span class="muted">${st.lastReviewAt ? fmtDate(st.lastReviewAt) : "—"}</span>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="footnote">
+          Se você quiser, eu posso adicionar: filtro por unidade/aula, pré-requisitos por tópico e modo “simulado por assunto”.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <h2>Ritual pré-prova (recomendado)</h2>
+        <p>Para tirar 80%+ sem sobrecarregar a memória.</p>
+      </div>
+      <div class="bd">
+        <div class="callout">
+          <b>Plano curto (1 dia):</b><br>
+          1) 25–40 cards vencidos (modo foco)<br>
+          2) Simulado 10–15 questões<br>
+          3) Revisar apenas erros (cards voltam a vencer cedo)<br>
+          4) Parar cedo e dormir
+        </div>
+        <div class="sep"></div>
+        <div class="btnrow">
+          <button class="primary" id="goCardsNow">Ir para Flashcards</button>
+          <button id="goQuizNow">Ir para Simulado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+/* ============================
+   8) Binds
+============================ */
+function bindCommon(){
+  const goCards = $("#goCards");
+  if(goCards) goCards.addEventListener("click", ()=>setRoute("cards"));
+  const goQuiz = $("#goQuiz");
+  if(goQuiz) goQuiz.addEventListener("click", ()=>{ setRoute("quiz"); startQuiz(); render(); });
+
+  const goQuiz2 = $("#goQuiz2");
+  if(goQuiz2) goQuiz2.addEventListener("click", ()=>setRoute("quiz"));
+
+  const goCardsNow = $("#goCardsNow");
+  if(goCardsNow) goCardsNow.addEventListener("click", ()=>setRoute("cards"));
+  const goQuizNow = $("#goQuizNow");
+  if(goQuizNow) goQuizNow.addEventListener("click", ()=>setRoute("quiz"));
+
+  const goCards3 = $("#goCards3");
+  if(goCards3) goCards3.addEventListener("click", ()=>setRoute("cards"));
+}
+
+function bindCards(){
+  const card = getCurrentCard();
+  const big = $("#bigcard");
+
+  // hints toggle
+  if(!state.settings.showHints){
+    big.classList.add("noHints");
+    // hint é controlado por classes answerHidden/Shown
+  }
+
+  $("#toggleAnswer").addEventListener("click", ()=>toggleAnswer());
+  $("#nextCard").addEventListener("click", ()=>{
+    setCurrentCard(pickNextCard());
+    render();
+  });
+
+  $("#dailyGoal").addEventListener("change", (e)=>{
+    state.settings.dailyGoal = clamp(parseInt(e.target.value||"25",10), 5, 200);
+    saveState();
+  });
+  $("#quizCount").addEventListener("change", (e)=>{
+    state.settings.quizCount = clamp(parseInt(e.target.value||"10",10), 5, 50);
+    saveState();
+  });
+
+  $("#goQuiz2").addEventListener("click", ()=>{ setRoute("quiz"); startQuiz(); render(); });
+
+  $("#resetSession").addEventListener("click", ()=>{
+    state.session.currentCardId = null;
+    state.session.cardSide = "front";
+    saveState();
+    render();
+  });
+
+  function doGrade(g){
+    if(state.session.cardSide==="front"){
+      alert("Mostre a resposta antes de pontuar 🙂");
+      return;
+    }
+    applyGrade(card.id, g);
+    bumpDailyCount();
+
+    // próximo card
+    setCurrentCard(pickNextCard());
+    render();
+  }
+
+  $("#g0").addEventListener("click", ()=>doGrade(0));
+  $("#g3").addEventListener("click", ()=>doGrade(3));
+  $("#g4").addEventListener("click", ()=>doGrade(4));
+  $("#g5").addEventListener("click", ()=>doGrade(5));
+
+  // teclado: espaço vira; 1-4 grades
+  window.onkeydown = (ev)=>{
+    // não capturar em inputs/textarea
+    const tag = (ev.target && ev.target.tagName) ? ev.target.tagName.toLowerCase() : "";
+    if(tag==="input" || tag==="textarea" || tag==="select") return;
+
+    if(ev.code==="Space"){
+      ev.preventDefault();
+      toggleAnswer();
+    }
+    if(ev.key==="1") doGrade(0);
+    if(ev.key==="2") doGrade(3);
+    if(ev.key==="3") doGrade(4);
+    if(ev.key==="4") doGrade(5);
+  };
+
+  function toggleAnswer(){
+    state.session.cardSide = (state.session.cardSide==="front") ? "back" : "front";
+    saveState();
+    render();
+  }
+}
+
+function bindQuiz(){
+  $("#startQuiz").addEventListener("click", ()=>{
+    startQuiz();
+    render();
+  });
+
+  const quizSettings = $("#quizSettings");
+  if(quizSettings) quizSettings.addEventListener("click", ()=>{
+    // só rolar; aqui mantemos simples
+    window.scrollTo({top: 99999, behavior:"smooth"});
+  });
+
+  const quiz = state.session.lastQuiz;
+  if(!quiz) return;
+
+  if(quiz.done){
+    const newQuiz = $("#newQuiz");
+    if(newQuiz) newQuiz.addEventListener("click", ()=>{
+      startQuiz(); render();
+    });
+    return;
+  }
+
+  const q = quiz.questions[quiz.idx];
+
+  // selecionar alternativa (radio)
+  $$(".opt input[type='radio']").forEach(r=>{
+    r.addEventListener("change", (e)=>{
+      q._pendingChoice = parseInt(e.target.dataset.opt, 10);
+    });
+  });
+
+  const confirm = $("#confirmQuiz");
+  if(confirm){
+    confirm.addEventListener("click", ()=>{
+      if(q._pendingChoice==null){
+        alert("Escolha uma alternativa 🙂");
+        return;
       }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-        background: linear-gradient(180deg, #07080a, var(--bg));
-        color: var(--text);
+      answerQuiz(quiz.idx, q._pendingChoice);
+      render();
+    });
+  }
+
+  const skip = $("#skipQuiz");
+  if(skip){
+    skip.addEventListener("click", ()=>{
+      // pula sem marcar
+      quiz.idx = Math.min(quiz.count-1, quiz.idx+1);
+      if(quiz.idx===quiz.count-1 && quiz.questions[quiz.idx].chosenIdx!=null){
+        // nada
       }
-      a { color: inherit; }
-      .wrap { max-width: 1100px; margin: 0 auto; padding: 18px; }
-      .top {
-        display:flex; gap:12px; align-items:center; justify-content:space-between;
-        padding: 14px 16px; border: 1px solid var(--border); border-radius: 18px;
-        background: rgba(18,22,28,.9); backdrop-filter: blur(6px);
-        position: sticky; top: 10px; z-index: 5;
+      saveState();
+      render();
+    });
+  }
+
+  const next = $("#nextQuiz");
+  if(next){
+    next.addEventListener("click", ()=>{
+      if(quiz.idx < quiz.count-1){
+        quiz.idx += 1;
+        saveState();
+        render();
+      }else{
+        finishQuiz();
+        render();
       }
-      .title { font-weight: 800; letter-spacing: .2px; }
-      .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
-      .grid { display:grid; grid-template-columns: 360px 1fr; gap: 14px; margin-top: 14px; }
-      @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } .top{ position:static; } }
-      .card {
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        background: rgba(18,22,28,.85);
-        padding: 14px;
-      }
-      .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-      .row > * { flex: none; }
-      .sp { justify-content: space-between; }
-      input, textarea, select {
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: var(--panel2);
-        color: var(--text);
-        outline: none;
-      }
-      textarea { min-height: 92px; resize: vertical; }
-      button {
-        border: 1px solid var(--border);
-        background: #141a22;
-        color: var(--text);
-        padding: 10px 12px;
-        border-radius: 12px;
-        cursor: pointer;
-      }
-      button:hover { filter: brightness(1.07); }
-      button.primary { background: #1a2735; border-color: #2a3a50; }
-      button.danger { background: rgba(255,92,108,.12); border-color: rgba(255,92,108,.35); color: #ffd8dc; }
-      button.ok { background: rgba(68,209,157,.12); border-color: rgba(68,209,157,.35); color: #d6fff0; }
-      .pill {
-        padding: 6px 10px; border-radius: 999px; border:1px solid var(--border);
-        background: rgba(12,16,22,.7); color: var(--muted); font-size: 12px;
-      }
-      .list { margin-top: 10px; display:flex; flex-direction:column; gap:8px; }
-      .item {
-        padding: 10px; border-radius: 14px; border:1px solid var(--border);
-        background: rgba(12,16,22,.7);
-        display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
-      }
-      .item .meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
-      .item .front { font-weight: 650; }
-      .item .actions { display:flex; gap:8px; }
-      .hr { height:1px; background: var(--border); margin: 12px 0; }
-      .big {
-        font-size: 22px; font-weight: 850; letter-spacing: .2px;
-      }
-      .reviewBox {
-        border:1px solid var(--border);
-        border-radius: 18px;
-        background: rgba(12,16,22,.6);
-        padding: 14px;
-      }
-      .face {
-        white-space: pre-wrap;
-        font-size: 18px;
-        line-height: 1.35;
-        padding: 10px 6px;
-      }
-      .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
-      .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; font-size: 12px; }
-      .btnRow { display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
-      .btnRow button { flex:1; min-width: 120px; }
-      .small { font-size: 12px; color: var(--muted); }
-      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; }
-      .two { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-      @media (max-width: 720px){ .two{ grid-template-columns: 1fr; } }
-    </style>
-  </head>
+    });
+  }
 
-  <body>
-    <div id="root"></div>
+  // config rápida
+  $("#saveQuizCfg").addEventListener("click", ()=>{
+    state.settings.quizCount = clamp(parseInt($("#quizCount2").value||"10",10), 5, 50);
+    state.settings.quizFrom = $("#quizFrom").value;
+    saveState();
+    alert("Config salva ✅");
+    render();
+  });
 
-    <!-- React 18 -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  $("#clearQuiz").addEventListener("click", ()=>{
+    state.session.lastQuiz = null;
+    saveState();
+    render();
+  });
+}
 
-    <!-- Babel (JSX in browser) -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+function bindDeck(){
+  $("#exportDeck").addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(state.deck, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "deck_sistemas_operacionais.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  });
 
-    <script type="text/babel">
-      const { useEffect, useMemo, useRef, useState } = React;
+  $("#importDeck").addEventListener("click", ()=>{
+    const txt = $("#importArea").value.trim();
+    if(!txt){
+      alert("Cole o JSON do deck primeiro.");
+      return;
+    }
+    try{
+      const deck = JSON.parse(txt);
+      if(!deck.cards || !Array.isArray(deck.cards)) throw new Error("Formato inválido: falta cards[]");
 
-      // =========================
-      // FSRS 4.5 core
-      // =========================
-      const DEFAULT_W_45 = [
-        0.4872, 1.4003, 3.7145, 13.8206, 5.1618, 1.2298, 0.8975, 0.031, 1.6474,
-        0.1367, 1.0461, 2.1072, 0.0793, 0.3246, 1.587, 0.2272, 2.8755,
-      ];
+      // substitui deck e re-cria srs mantendo o que bater por id
+      const oldSrs = state.srs;
+      state.deck = deck;
+      state.srs = {};
 
-      const DECAY = -0.5;
-      const FACTOR = 19 / 81;
-
-      const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-      const now = () => Date.now();
-      const daysToMs = (d) => d * 24 * 60 * 60 * 1000;
-      const msToDays = (ms) => ms / (1000 * 60 * 60 * 24);
-      const uid = (p="id") => `${p}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
-
-      function retrievability(tDays, S) {
-        if (S <= 0) return 0;
-        const base = 1 + FACTOR * (tDays / S);
-        return Math.pow(base, DECAY);
-      }
-
-      function intervalFromRetention(r, S) {
-        const rr = clamp(r, 0.01, 0.999);
-        const term = Math.pow(rr, 1 / DECAY) - 1;
-        const I = (S / FACTOR) * term;
-        return Math.max(1, I);
-      }
-
-      function initialStability(w, G) {
-        return w[G - 1];
-      }
-
-      function initialDifficulty(w, G) {
-        const w4 = w[4];
-        const w5 = w[5];
-        const D0 = w4 - (G - 3) * w5;
-        return clamp(D0, 1, 10);
-      }
-
-      function nextDifficulty(w, D, G) {
-        const w6 = w[6];
-        const w7 = w[7];
-        const D0_3 = w[4];
-        const raw = D - w6 * (G - 3);
-        const Dp = w7 * D0_3 + (1 - w7) * raw;
-        return clamp(Dp, 1, 10);
-      }
-
-      function stabilityAfterSuccess(w, D, S, R, G) {
-        const w8 = w[8];
-        const w9 = w[9];
-        const w10 = w[10];
-        const w15 = w[15];
-        const w16 = w[16];
-
-        const hardFactor = G === 2 ? w15 : 1;
-        const easyFactor = G === 4 ? w16 : 1;
-
-        const a = Math.exp(w8);
-        const b = 11 - D;
-        const c = Math.pow(S, -w9);
-        const d = Math.exp(w10 * (1 - R)) - 1;
-
-        const inc = a * b * c * d * hardFactor * easyFactor + 1;
-        const Sp = S * inc;
-        return Math.max(0.01, Sp);
-      }
-
-      function stabilityAfterFail(w, D, S, R) {
-        const w11 = w[11];
-        const w12 = w[12];
-        const w13 = w[13];
-        const w14 = w[14];
-
-        const a = w11;
-        const b = Math.pow(D, -w12);
-        const c = Math.pow(S + 1, w13) - 1;
-        const d = Math.exp(w14 * (1 - R));
-
-        const Sp = a * b * c * d;
-        return Math.max(0.01, Sp);
-      }
-
-      function defaultCardState() {
-        return {
-          stability: 0,
-          difficulty: 0,
-          reps: 0,
-          lapses: 0,
-          lastReviewAt: null,
-          dueAt: now(),
+      for(const card of deck.cards){
+        state.srs[card.id] = oldSrs[card.id] ?? {
+          ease: 2.3, intervalDays: 0, reps: 0, due: now(), lapses: 0, lastGrade: null
         };
       }
-
-      // =========================
-      // Storage
-      // =========================
-      const STORAGE_KEY = "anki_fsrs_sm18_singlefile_v1";
-
-      function loadApp() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return null;
-          return JSON.parse(raw);
-        } catch {
-          return null;
-        }
-      }
-      function saveApp(data) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      // se currentCard não existir, reset
+      if(!deck.cards.some(c=>c.id===state.session.currentCardId)){
+        state.session.currentCardId = null;
+        state.session.cardSide = "front";
       }
 
-      // =========================
-      // UI helpers
-      // =========================
-      function fmtDate(ms) {
-        const d = new Date(ms);
-        return d.toLocaleString();
-      }
-
-      function countDue(cards, deckId) {
-        const t = now();
-        return cards.filter(c => c.deckId === deckId && c.state.dueAt <= t).length;
-      }
-
-      function computeTargetRetention(fiPct) {
-        const fi = clamp(fiPct, 0, 50) / 100;
-        return clamp(1 - fi, 0.5, 0.99);
-      }
-
-      function exportJson(state) {
-        const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "anki-fsrs-sm18-export.json";
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-
-      function App() {
-        // -------------------------
-        // Init
-        // -------------------------
-        const loaded = useMemo(() => loadApp(), []);
-        const [settings, setSettings] = useState(() => loaded?.settings ?? ({
-          forgettingIndexPct: 10,
-          w: DEFAULT_W_45.slice(),
-          againStepMinutes: 10,
-        }));
-        const [decks, setDecks] = useState(() => loaded?.decks ?? [
-          { id: uid("deck"), name: "Gestão de Projetos", createdAt: now() },
-        ]);
-        const [cards, setCards] = useState(() => loaded?.cards ?? []);
-        const [activeDeckId, setActiveDeckId] = useState(() => loaded?.activeDeckId ?? (loaded?.decks?.[0]?.id ?? null));
-        const [tab, setTab] = useState(() => "review"); // review | manage | settings
-
-        // Create deck form
-        const [newDeckName, setNewDeckName] = useState("");
-
-        // Create/edit card
-        const [front, setFront] = useState("");
-        const [back, setBack] = useState("");
-        const [editingId, setEditingId] = useState(null);
-
-        // Review session
-        const [showAnswer, setShowAnswer] = useState(false);
-        const [reviewQueue, setReviewQueue] = useState([]);
-        const [currentId, setCurrentId] = useState(null);
-
-        const targetRetention = useMemo(
-          () => computeTargetRetention(settings.forgettingIndexPct),
-          [settings.forgettingIndexPct]
-        );
-
-        // Persist
-        useEffect(() => {
-          saveApp({ settings, decks, cards, activeDeckId });
-        }, [settings, decks, cards, activeDeckId]);
-
-        // Ensure active deck exists
-        useEffect(() => {
-          if (!activeDeckId && decks.length) setActiveDeckId(decks[0].id);
-        }, [activeDeckId, decks]);
-
-        const activeDeck = useMemo(() => decks.find(d => d.id === activeDeckId) ?? null, [decks, activeDeckId]);
-
-        const deckCards = useMemo(() => cards.filter(c => c.deckId === activeDeckId), [cards, activeDeckId]);
-
-        const dueCards = useMemo(() => {
-          const t = now();
-          return deckCards.filter(c => c.state.dueAt <= t).sort((a,b) => a.state.dueAt - b.state.dueAt);
-        }, [deckCards]);
-
-        // Build / refresh review queue
-        function startReview() {
-          const ids = dueCards.map(c => c.id);
-          setReviewQueue(ids);
-          setCurrentId(ids[0] ?? null);
-          setShowAnswer(false);
-        }
-
-        useEffect(() => {
-          // auto refresh queue when switching decks
-          setReviewQueue([]);
-          setCurrentId(null);
-          setShowAnswer(false);
-        }, [activeDeckId]);
-
-        const currentCard = useMemo(() => cards.find(c => c.id === currentId) ?? null, [cards, currentId]);
-
-        // Keyboard shortcuts: space to flip, 1-4 to rate
-        useEffect(() => {
-          function onKey(e) {
-            if (tab !== "review") return;
-            if (!currentCard) return;
-
-            if (e.code === "Space") {
-              e.preventDefault();
-              setShowAnswer(s => !s);
-            }
-            if (showAnswer) {
-              if (e.key === "1") onRate(1);
-              if (e.key === "2") onRate(2);
-              if (e.key === "3") onRate(3);
-              if (e.key === "4") onRate(4);
-            }
-          }
-          window.addEventListener("keydown", onKey);
-          return () => window.removeEventListener("keydown", onKey);
-        }, [tab, currentCard, showAnswer]);
-
-        // -------------------------
-        // Deck actions
-        // -------------------------
-        function addDeck() {
-          const name = newDeckName.trim();
-          if (!name) return;
-          const d = { id: uid("deck"), name, createdAt: now() };
-          setDecks(ds => [d, ...ds]);
-          setActiveDeckId(d.id);
-          setNewDeckName("");
-        }
-
-        function deleteDeck(id) {
-          if (!confirm("Apagar este baralho e todos os cards?")) return;
-          setDecks(ds => ds.filter(d => d.id !== id));
-          setCards(cs => cs.filter(c => c.deckId !== id));
-          if (activeDeckId === id) setActiveDeckId(decks.find(d => d.id !== id)?.id ?? null);
-        }
-
-        // -------------------------
-        // Card actions
-        // -------------------------
-        function resetEditor() {
-          setFront("");
-          setBack("");
-          setEditingId(null);
-        }
-
-        function saveCard() {
-          if (!activeDeckId) return;
-          const f = front.trim();
-          const b = back.trim();
-          if (!f || !b) return;
-
-          if (editingId) {
-            setCards(cs => cs.map(c => c.id === editingId ? { ...c, front: f, back: b } : c));
-          } else {
-            const c = {
-              id: uid("card"),
-              deckId: activeDeckId,
-              front: f,
-              back: b,
-              createdAt: now(),
-              state: defaultCardState(),
-            };
-            setCards(cs => [c, ...cs]);
-          }
-          resetEditor();
-        }
-
-        function editCard(card) {
-          setEditingId(card.id);
-          setFront(card.front);
-          setBack(card.back);
-          setTab("manage");
-        }
-
-        function deleteCard(id) {
-          if (!confirm("Apagar este card?")) return;
-          setCards(cs => cs.filter(c => c.id !== id));
-        }
-
-        function buryCard(id, days=1) {
-          // push due date forward
-          setCards(cs => cs.map(c => {
-            if (c.id !== id) return c;
-            return { ...c, state: { ...c.state, dueAt: now() + daysToMs(days) } };
-          }));
-        }
-
-        // -------------------------
-        // Review scheduler logic
-        // -------------------------
-        function schedule(card, rating) {
-          const w = settings.w;
-          const tNow = now();
-
-          const st = card.state;
-          const last = st.lastReviewAt;
-          const elapsedDays = last ? Math.max(0, msToDays(tNow - last)) : 0;
-
-          // If new card: initialize S/D on first rating
-          let S = st.stability;
-          let D = st.difficulty;
-
-          // Retrievability right before review
-          const R = (last && S > 0) ? retrievability(elapsedDays, S) : 0;
-
-          let reps = st.reps;
-          let lapses = st.lapses;
-
-          // Determine success/fail: rating 1 = fail, else success
-          const success = rating !== 1;
-
-          if (reps === 0) {
-            // initialize using first rating as "grade"
-            S = initialStability(w, rating);
-            D = initialDifficulty(w, rating);
-          } else {
-            // update difficulty
-            D = nextDifficulty(w, D, rating);
-
-            // update stability
-            if (success) {
-              S = stabilityAfterSuccess(w, D, S, R, rating);
-            } else {
-              S = stabilityAfterFail(w, D, S, R);
-            }
-          }
-
-          reps += 1;
-          if (!success) lapses += 1;
-
-          // Schedule next due
-          let dueAt = tNow;
-
-          if (rating === 1) {
-            // Again: short step (learning) in minutes
-            dueAt = tNow + settings.againStepMinutes * 60 * 1000;
-          } else {
-            // Use target retention derived from FI
-            const I = intervalFromRetention(targetRetention, S); // days
-            dueAt = tNow + daysToMs(I);
-          }
-
-          return {
-            ...card,
-            state: {
-              ...st,
-              stability: S,
-              difficulty: D,
-              reps,
-              lapses,
-              lastReviewAt: tNow,
-              dueAt,
-            }
-          };
-        }
-
-        function onRate(rating) {
-          if (!currentCard) return;
-
-          // update card
-          setCards(cs => cs.map(c => c.id === currentCard.id ? schedule(c, rating) : c));
-
-          // next in queue: rebuild after state updates (simple: pop)
-          setShowAnswer(false);
-          setReviewQueue(q => {
-            const rest = q.filter(id => id !== currentCard.id);
-            setCurrentId(rest[0] ?? null);
-            return rest;
-          });
-        }
-
-        // -------------------------
-        // Import / Export
-        // -------------------------
-        function importJsonFile(file) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            try {
-              const data = JSON.parse(reader.result);
-              if (!data || !data.decks || !data.cards || !data.settings) throw new Error("Formato inválido");
-              setSettings(data.settings);
-              setDecks(data.decks);
-              setCards(data.cards);
-              setActiveDeckId(data.activeDeckId ?? data.decks?.[0]?.id ?? null);
-              alert("Importado com sucesso.");
-            } catch (e) {
-              alert("Falha ao importar: " + (e?.message ?? "erro"));
-            }
-          };
-          reader.readAsText(file);
-        }
-
-        // -------------------------
-        // Derived stats
-        // -------------------------
-        const stats = useMemo(() => {
-          const t = now();
-          const total = deckCards.length;
-          const due = deckCards.filter(c => c.state.dueAt <= t).length;
-          const newCount = deckCards.filter(c => c.state.reps === 0).length;
-          const learned = total - newCount;
-          return { total, due, newCount, learned };
-        }, [deckCards]);
-
-        // Current card state info for UI
-        const currentInfo = useMemo(() => {
-          if (!currentCard) return null;
-          const st = currentCard.state;
-          const tNow = now();
-          const elapsedDays = st.lastReviewAt ? Math.max(0, msToDays(tNow - st.lastReviewAt)) : 0;
-          const R = (st.lastReviewAt && st.stability > 0) ? retrievability(elapsedDays, st.stability) : null;
-          return { elapsedDays, R };
-        }, [currentCard]);
-
-        // -------------------------
-        // Render
-        // -------------------------
-        return (
-          <div className="wrap">
-            <div className="top">
-              <div>
-                <div className="title">Anki Digital — FSRS + SM18-ish (Single File)</div>
-                <div className="sub">
-                  Baralho: <span className="mono">{activeDeck?.name ?? "(nenhum)"}</span> •
-                  <span className="pill" style={{marginLeft: 10}}>FI {settings.forgettingIndexPct}% → Retenção alvo {Math.round(targetRetention*100)}%</span>
-                </div>
-              </div>
-
-              <div className="row">
-                <button className={tab==="review" ? "primary" : ""} onClick={() => setTab("review")}>Revisar</button>
-                <button className={tab==="manage" ? "primary" : ""} onClick={() => setTab("manage")}>Cards</button>
-                <button className={tab==="settings" ? "primary" : ""} onClick={() => setTab("settings")}>Config</button>
-              </div>
-            </div>
-
-            <div className="grid">
-              {/* Left: Decks */}
-              <div className="card">
-                <div className="row sp">
-                  <div className="big">Baralhos</div>
-                  <span className="pill">{decks.length}</span>
-                </div>
-
-                <div className="row" style={{marginTop:10}}>
-                  <input
-                    placeholder="Novo baralho (ex: U1 Aula 1)"
-                    value={newDeckName}
-                    onChange={e => setNewDeckName(e.target.value)}
-                    onKeyDown={e => (e.key==="Enter" ? addDeck() : null)}
-                  />
-                  <button className="primary" onClick={addDeck}>Criar</button>
-                </div>
-
-                <div className="list">
-                  {decks.map(d => {
-                    const due = countDue(cards, d.id);
-                    const active = d.id === activeDeckId;
-                    return (
-                      <div key={d.id} className="item" style={{outline: active ? "1px solid #2a3a50" : "none"}}>
-                        <div style={{minWidth:0}}>
-                          <div className="front" style={{wordBreak:"break-word"}}>{d.name}</div>
-                          <div className="meta">
-                            Criado: {new Date(d.createdAt).toLocaleDateString()} •
-                            <span className="pill" style={{marginLeft:8}}>Due: {due}</span>
-                          </div>
-                        </div>
-                        <div className="actions">
-                          <button onClick={() => setActiveDeckId(d.id)}>Abrir</button>
-                          <button className="danger" onClick={() => deleteDeck(d.id)}>Apagar</button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="hr"></div>
-                <div className="row sp">
-                  <div className="small">Backup</div>
-                  <div className="row">
-                    <button onClick={() => exportJson({ settings, decks, cards, activeDeckId })}>Exportar</button>
-                    <label style={{display:"inline-block"}}>
-                      <input
-                        type="file"
-                        accept="application/json"
-                        style={{display:"none"}}
-                        onChange={e => {
-                          const f = e.target.files?.[0];
-                          if (f) importJsonFile(f);
-                          e.target.value = "";
-                        }}
-                      />
-                      <button>Importar</button>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Main */}
-              <div className="card">
-                {tab === "review" && (
-                  <>
-                    <div className="row sp">
-                      <div className="big">Revisão</div>
-                      <div className="row">
-                        <span className="pill">Total: {stats.total}</span>
-                        <span className="pill">Novos: {stats.newCount}</span>
-                        <span className="pill">Due: {stats.due}</span>
-                      </div>
-                    </div>
-
-                    <div className="hr"></div>
-
-                    {(!activeDeckId || !activeDeck) ? (
-                      <div className="small">Crie ou selecione um baralho.</div>
-                    ) : (
-                      <>
-                        <div className="row sp">
-                          <div className="small">
-                            Atalhos: <span className="kbd">Espaço</span> (virar) •
-                            <span className="kbd"> 1</span> Again • <span className="kbd">2</span> Hard • <span className="kbd">3</span> Good • <span className="kbd">4</span> Easy
-                          </div>
-                          <div className="row">
-                            <button className="primary" onClick={startReview}>Carregar Due</button>
-                          </div>
-                        </div>
-
-                        <div style={{marginTop: 12}} className="reviewBox">
-                          {!currentCard ? (
-                            <div className="small">
-                              {dueCards.length === 0
-                                ? "Nada vencido agora. Adicione cards ou aguarde o próximo agendamento."
-                                : "Clique em “Carregar Due” para iniciar."}
-                            </div>
-                          ) : (
-                            <>
-                              <div className="face">{currentCard.front}</div>
-                              <div className="hr"></div>
-                              {showAnswer ? (
-                                <div className="face" style={{opacity:.95}}>{currentCard.back}</div>
-                              ) : (
-                                <div className="hint">Pressione <span className="kbd">Espaço</span> para ver a resposta.</div>
-                              )}
-
-                              {currentInfo && (
-                                <div className="hint">
-                                  Estado: S={currentCard.state.stability.toFixed(2)} • D={currentCard.state.difficulty.toFixed(2)} • reps={currentCard.state.reps} • lapses={currentCard.state.lapses}
-                                  {currentCard.state.lastReviewAt && (
-                                    <> • último={fmtDate(currentCard.state.lastReviewAt)} • t={currentInfo.elapsedDays.toFixed(2)}d • R≈{currentInfo.R ? (currentInfo.R*100).toFixed(1) : "—"}%</>
-                                  )}
-                                </div>
-                              )}
-
-                              <div className="btnRow">
-                                <button
-                                  className="danger"
-                                  onClick={() => showAnswer && onRate(1)}
-                                  title="1"
-                                >Again</button>
-                                <button onClick={() => showAnswer && onRate(2)} title="2">Hard</button>
-                                <button className="ok" onClick={() => showAnswer && onRate(3)} title="3">Good</button>
-                                <button className="primary" onClick={() => showAnswer && onRate(4)} title="4">Easy</button>
-                              </div>
-
-                              <div className="hint">
-                                Dica: você pode “enterrar” um card por 1 dia no modo Cards.
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {tab === "manage" && (
-                  <>
-                    <div className="row sp">
-                      <div className="big">Cards</div>
-                      <span className="pill">{deckCards.length}</span>
-                    </div>
-
-                    <div className="hr"></div>
-
-                    {!activeDeckId ? (
-                      <div className="small">Selecione um baralho.</div>
-                    ) : (
-                      <>
-                        <div className="two">
-                          <div>
-                            <div className="small">Frente</div>
-                            <textarea value={front} onChange={e=>setFront(e.target.value)} placeholder="Pergunta / termo / enunciado" />
-                          </div>
-                          <div>
-                            <div className="small">Verso</div>
-                            <textarea value={back} onChange={e=>setBack(e.target.value)} placeholder="Resposta / definição / explicação" />
-                          </div>
-                        </div>
-
-                        <div className="row" style={{marginTop: 10}}>
-                          <button className="primary" onClick={saveCard}>{editingId ? "Salvar edição" : "Adicionar card"}</button>
-                          <button onClick={resetEditor}>Limpar</button>
-                          {editingId && <span className="pill">Editando: <span className="mono">{editingId}</span></span>}
-                        </div>
-
-                        <div className="hr"></div>
-
-                        <div className="list">
-                          {deckCards.length === 0 && (
-                            <div className="small">Sem cards ainda. Crie o primeiro acima.</div>
-                          )}
-
-                          {deckCards.map(c => {
-                            const dueIn = c.state.dueAt - now();
-                            const dueLabel = dueIn <= 0 ? "DUE" : `em ~${Math.ceil(msToDays(dueIn))}d`;
-                            return (
-                              <div key={c.id} className="item">
-                                <div style={{minWidth:0}}>
-                                  <div className="front" style={{wordBreak:"break-word"}}>{c.front}</div>
-                                  <div className="meta">
-                                    <span className="pill">{dueLabel}</span>
-                                    <span className="pill" style={{marginLeft:8}}>S={c.state.stability.toFixed(2)}</span>
-                                    <span className="pill" style={{marginLeft:8}}>D={c.state.difficulty.toFixed(2)}</span>
-                                    <span className="pill" style={{marginLeft:8}}>reps={c.state.reps}</span>
-                                    <span className="pill" style={{marginLeft:8}}>lapses={c.state.lapses}</span>
-                                  </div>
-                                </div>
-                                <div className="actions">
-                                  <button onClick={() => editCard(c)}>Editar</button>
-                                  <button onClick={() => buryCard(c.id, 1)}>Enterrar 1d</button>
-                                  <button className="danger" onClick={() => deleteCard(c.id)}>Apagar</button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {tab === "settings" && (
-                  <>
-                    <div className="row sp">
-                      <div className="big">Configurações</div>
-                      <span className="pill">LocalStorage</span>
-                    </div>
-
-                    <div className="hr"></div>
-
-                    <div className="two">
-                      <div>
-                        <div className="small">Forgetting Index (SM18-ish) — % que você aceita esquecer</div>
-                        <input
-                          type="number"
-                          min="0"
-                          max="50"
-                          step="1"
-                          value={settings.forgettingIndexPct}
-                          onChange={e => setSettings(s => ({ ...s, forgettingIndexPct: Number(e.target.value) }))}
-                        />
-                        <div className="hint">
-                          FI {settings.forgettingIndexPct}% ⇒ retenção alvo ≈ <b>{Math.round(targetRetention*100)}%</b> no momento da revisão.
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="small">Again step (minutos)</div>
-                        <input
-                          type="number"
-                          min="1"
-                          max="120"
-                          step="1"
-                          value={settings.againStepMinutes}
-                          onChange={e => setSettings(s => ({ ...s, againStepMinutes: Number(e.target.value) }))}
-                        />
-                        <div className="hint">
-                          Quando você marca <b>Again</b>, o card volta após esse tempo (modo “learning” simples).
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="hr"></div>
-
-                    <div className="small">Parâmetros FSRS (w[0..16])</div>
-                    <div className="hint">
-                      Você pode deixar nos padrões. Se mexer, faça backup antes.
-                    </div>
-
-                    <div style={{marginTop: 10}}>
-                      <textarea
-                        className="mono"
-                        value={JSON.stringify(settings.w)}
-                        onChange={e => {
-                          try {
-                            const arr = JSON.parse(e.target.value);
-                            if (Array.isArray(arr) && arr.length === 17 && arr.every(x => typeof x === "number")) {
-                              setSettings(s => ({ ...s, w: arr }));
-                            }
-                          } catch {}
-                        }}
-                      />
-                      <div className="row" style={{marginTop: 10}}>
-                        <button onClick={() => setSettings(s => ({ ...s, w: DEFAULT_W_45.slice() }))}>Restaurar padrão FSRS 4.5</button>
-                        <button className="danger" onClick={() => {
-                          if (!confirm("Isso vai apagar tudo do LocalStorage (decks, cards e config). Continuar?")) return;
-                          localStorage.removeItem(STORAGE_KEY);
-                          location.reload();
-                        }}>Reset total</button>
-                      </div>
-                    </div>
-
-                    <div className="hr"></div>
-
-                    <div className="hint">
-                      Referências: FSRS-4.5 (wiki do FSRS4Anki) e conceito de Forgetting Index do SuperMemo.
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(<App />);
-    </script>
-  </body>
+      saveState();
+      alert("Deck importado ✅");
+      render();
+    }catch(e){
+      alert("Erro ao importar: " + e.message);
+    }
+  });
+
+  $("#resetAll").addEventListener("click", ()=>{
+    if(!confirm("Isso apaga TODO o progresso e volta ao deck padrão. Confirmar?")) return;
+    localStorage.removeItem(LS_KEY);
+    state = loadState(); // recria
+    render();
+  });
+}
+
+function bindSettings(){
+  $("#saveSettings").addEventListener("click", ()=>{
+    state.settings.focusMode = ($("#focusMode").value === "true");
+    state.settings.showHints = ($("#showHints").value === "true");
+    saveState();
+    alert("Configurações salvas ✅");
+    render();
+  });
+}
+
+/* ============================
+   9) Diário (meta por dia)
+============================ */
+function dailyKey(){
+  return new Date().toISOString().slice(0,10);
+}
+function getDailyCount(key){
+  const k = "so_daily_" + key;
+  return parseInt(localStorage.getItem(k)||"0", 10);
+}
+function bumpDailyCount(){
+  const k = "so_daily_" + dailyKey();
+  const n = parseInt(localStorage.getItem(k)||"0", 10) + 1;
+  localStorage.setItem(k, String(n));
+}
+
+/* ============================
+   10) Segurança XSS básica
+============================ */
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* ============================
+   11) Boot
+============================ */
+(function boot(){
+  // Se não tem card atual, seta
+  if(!state.session.currentCardId){
+    setCurrentCard(pickNextCard());
+  }
+  render();
+})();
+</script>
+</body>
 </html>
